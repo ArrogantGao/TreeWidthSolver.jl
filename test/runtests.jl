@@ -2,5 +2,5 @@ using TamakiTreeWidth
 using Test
 
 @testset "TamakiTreeWidth.jl" begin
-    # Write your tests here.
+    include("line_graph.jl")
 end
