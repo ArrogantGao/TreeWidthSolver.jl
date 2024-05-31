@@ -1,5 +1,7 @@
 module TamakiTreeWidth
 
-# Write your package code here.
+using Graphs, SparseArrays
+
+include("Core.jl")
 
 end
