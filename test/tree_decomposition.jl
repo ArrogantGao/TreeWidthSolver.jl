@@ -1,20 +1,23 @@
 using TamakiTreeWidth
-using TamakiTreeWidth: isleaf
+using TamakiTreeWidth: isleaf, add_child!
 using Test
 
 @testset "tree decompositions" begin
-    b1 = TreeBag(Set([1, 2, 3]))
-    b2 = TreeBag([1, 2, 3])
-    @test b1 == b2
+    n1 = DecompositionTreeNode([1, 2, 3])
+    n2 = DecompositionTreeNode(Set([1, 2, 3]))
+    @test isleaf(n1)
+    @test n1 == n2
+    n3 = DecompositionTreeNode([1.0, 2.0, 3.0])
+    @test n1 != n3
 
-    b3 = TreeBag([1.0, 2.0, 3.0])
-    @test b1 != b3
+    add_child!(n1, [4, 5, 6])
+    n1c = copy(n1)
+    @test n1 == n1c
 
-    t1 = TreeDecomposition(b1)
-    @test isleaf(t1)
+    tree = DecompositionTreeNode([1, 2, 3])
+    add_child!(tree, [4, 5, 6])
+    add_child!(tree, [7, 8])
+    add_child!(tree.children[1], [9, 10, 11, 12])
 
-    t2 = TreeDecomposition(b1, [TreeDecomposition(b1), TreeDecomposition(b1)])
-    t2c = copy(t2)
-
-    @test t2 == t2c
+    @test treewidth(tree) == 1
 end

@@ -3,7 +3,7 @@ module TamakiTreeWidth
 using Graphs, SparseArrays, AbstractTrees
 
 export line_graph, simple_graph, sparse_adj
-export TreeBag, TreeDecomposition
+export DecompositionTreeNode, treewidth
 
 include("Core.jl")
 include("line_graph.jl")
