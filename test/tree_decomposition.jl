@@ -15,9 +15,10 @@ using Test
     @test n1 == n1c
 
     tree = DecompositionTreeNode([1, 2, 3])
-    add_child!(tree, [4, 5, 6])
-    add_child!(tree, [7, 8])
-    add_child!(tree.children[1], [9, 10, 11, 12])
+    add_child!(tree, [2, 3, 4])
+    add_child!(tree, [1, 3, 5, 6])
+    add_child!(tree.children[1], [4, 7])
+    add_child!(tree.children[1], [4, 8, 9])
 
-    @test treewidth(tree) == 1
+    @test treewidth(tree) == 3
 end

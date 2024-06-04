@@ -38,15 +38,41 @@ Base.copy(node::DecompositionTreeNode{T}) where T = DecompositionTreeNode(node.b
 isleaf(node::DecompositionTreeNode) = isempty(node.children)
 function treewidth(tree::DecompositionTreeNode)
     tw = length(tree.bag) - 1
-    return isleaf(tree) ? tw : min(tw, minimum(treewidth.(children(tree))))
+    return isleaf(tree) ? tw : max(tw, maximum(treewidth.(children(tree))))
 end
 
-# struct EliminationOrder{T}
-#     order::Vector{T}
-# end
+struct EliminationOrder{T}
+    order::Vector{T} # elimination order of vertices, the first element is the first one to be eliminated
+end
 
-# function elimination_order(tree::DecompositionTree{T}) where{T}
-#     order = Vector{T}()
-#     _elimination_order!(tree, order)
-#     return EliminationOrder(order)
-# end
+# Generate an elimination order from a tree decomposition
+EliminationOrder(tree::DecompositionTreeNode{T}) where{T} = _elimination_order(tree)
+function EliminationOrder(tree::DecompositionTreeNode{T}, graph::LabeledSimpleGraph{TL, TG}) where{T, TL, TG}
+    order_native = _elimination_order(tree)
+    order = [graph.labels[v] for v in order_native.order]
+    return EliminationOrder(order)
+end
+
+function _elimination_order(tree::DecompositionTreeNode{T}) where{T}
+    order = Vector{T}()
+
+    for node in PostOrderDFS(tree)
+        parent = node.parent
+        for v in node.bag
+            if !(v in order) && (isnothing(parent) || (!isnothing(parent) && !(v in parent.bag)))
+                pushfirst!(order, v)
+            end
+        end
+    end
+
+    return EliminationOrder(order)
+end
+
+# recover the tree decomposition from an elimination order
+DecompositionTreeNode(order::EliminationOrder{T}, graph::SimpleGraph) where{T} = _tree_decomposition(order, graph)
+
+function _tree_decomposition(order::EliminationOrder{T}, graph::SimpleGraph) where{T}
+    tree = DecompositionTreeNode(Set{T}())
+    
+    return tree
+end
