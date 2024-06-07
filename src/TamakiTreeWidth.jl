@@ -7,5 +7,6 @@ export DecompositionTreeNode, treewidth, EliminationOrder
 
 include("graphs.jl")
 include("tree_decomposition.jl")
+include("LuxorGraphPlot.jl")
 
 end

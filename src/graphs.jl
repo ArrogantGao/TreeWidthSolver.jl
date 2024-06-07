@@ -47,6 +47,28 @@ Base.show(io::IO, g::LabeledSimpleGraph{TG, TL}) where{TG, TL} = print(io,"Label
 Base.copy(g::LabeledSimpleGraph{TG, TL}) where{TG, TL} = LabeledSimpleGraph(copy(g.graph), copy(g.labels))
 Base.:(==)(g1::LabeledSimpleGraph{TG, TL}, g2::LabeledSimpleGraph{TG, TL}) where{TG, TL} = (g1.graph == g2.graph) && (g1.labels == g2.labels)
 
+function eliminate!(g::LabeledSimpleGraph{TG, TL}, v::TL) where{TG, TL}
+    vi = label2vec(g, v)
+    new_graph = SimpleGraph(nv(g) - 1)
+    new_labels = g.labels[1:end .!= vi]
+    for e in edges(g)
+        if e.src != vi && e.dst != vi
+            add_edge!(new_graph, e.src > vi ? e.src - 1 : e.src, e.dst > vi ? e.dst - 1 : e.dst)
+        end
+    end
+
+    neibs = neighbors(g.graph, vi)
+
+    for i in 1:length(neibs) - 1
+        for j in i + 1:length(neibs)
+            add_edge!(new_graph, neibs[i] > vi ? neibs[i] - 1 : neibs[i], neibs[j] > vi ? neibs[j] - 1 : neibs[j])
+        end
+    end
+    lg.graph = new_graph
+    lg.labels = new_labels
+    return lg
+end
+
 # contruct line graph from a sparse adjoint martix
 # cols represents the vertices, rows represent the edges, true for connected
 function line_graph(adjacency_mat::SparseMatrixCSC; labels::Vector{TL}=[1:size(adjacency_mat, 2)...]) where{TL}
