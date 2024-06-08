@@ -69,10 +69,72 @@ function _elimination_order(tree::DecompositionTreeNode{T}) where{T}
 end
 
 # recover the tree decomposition from an elimination order
-DecompositionTreeNode(order::EliminationOrder{T}, graph::SimpleGraph) where{T} = _tree_decomposition(order, graph)
+function decomposition_tree(order::EliminationOrder{TL}, graph::LabeledSimpleGraph{TG, TL}; root::Int = 1) where{TG, TL}
+    bags, tree = _tree_bags(order, graph)
+    root_node = DecompositionTreeNode(bags[root])
+    return _tree_decomposition!(root_node, bags, tree, root)
+end
 
-function _tree_decomposition(order::EliminationOrder{T}, graph::SimpleGraph) where{T}
-    tree = DecompositionTreeNode(Set{T}())
+function _tree_bags(order::EliminationOrder{TL}, graph::LabeledSimpleGraph{TG, TL}) where{TG, TL}
+
+    G = deepcopy(graph)
+    B = Vector{Vector{TL}}() # bags
+    T = SimpleGraph() # tree
+    orphan_bags = Int[] # Array to hold parentless vertices of T
+
+    for i in 1:length(order.order)
+        u = order.order[i]
+
+        # Eliminate u from G: form a clique and remove u,
+        # Take the clique formed by eliminating u as the next possible bag
+        Nᵤ = neighbors(G, u)
+        b = [u]
+        ib = length(B) + 1
+        if !isempty(Nᵤ) b = [Nᵤ; u] end
+        eliminate!(G, u)
+
+        drop_bag = false
+        # keep only maximal cliques
+        for i in orphan_bags
+            l = B[i]
+            if Set(b) == Set(intersect(b, l))
+                b = l
+                ib = i
+                drop_bag = true
+                break
+            end
+        end
+
+        # add a new vetex to the tree for the next bag
+        # and append it to the parentless vertices.
+        if !drop_bag
+            push!(B, b)
+            add_vertex!(T)
+            push!(orphan_bags, ib)
+        end
+
+        # Check if the new bag is a parent of any of the
+        # orphan vertices and update the list of orphans.
+        for i in orphan_bags
+            l = B[i]
+            b∩l = intersect(b, l)
+            if u in b∩l && !issubset(b, b∩l)
+                orphan_bags = setdiff(orphan_bags, [i])
+                add_edge!(T, i, ib)
+            end
+        end
+    end
     
-    return tree
+    return B, T
+end
+
+function _tree_decomposition!(node::DecompositionTreeNode{TL}, bags::Vector{Vector{TL}}, tree::SimpleGraph, i::Int) where{TL}
+    pbag = isnothing(AbstractTrees.parent(node)) ? Set{TL}() : AbstractTrees.parent(node).bag
+    for nᵢ in neighbors(tree, i)
+        if Set(bags[nᵢ]) != pbag
+            add_child!(node, bags[nᵢ])
+            _tree_decomposition!(node.children[end], bags, tree, nᵢ)
+        end
+    end
+    return node
 end

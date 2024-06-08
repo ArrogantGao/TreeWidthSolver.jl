@@ -31,6 +31,7 @@ end
 Graphs.nv(g::LabeledSimpleGraph) = nv(g.graph)
 Graphs.ne(g::LabeledSimpleGraph) = ne(g.graph)
 Graphs.edges(g::LabeledSimpleGraph) = edges(g.graph)
+Graphs.neighbors(g::LabeledSimpleGraph{TG, TL}, v::TL) where{TG, TL} = [g.labels[vi] for vi in neighbors(g.graph, label2vec(g, v))]
 
 function Graphs.add_edge!(g::LabeledSimpleGraph, src::Int, dst::Int)
     add_edge!(g.graph, src, dst)
@@ -64,9 +65,9 @@ function eliminate!(g::LabeledSimpleGraph{TG, TL}, v::TL) where{TG, TL}
             add_edge!(new_graph, neibs[i] > vi ? neibs[i] - 1 : neibs[i], neibs[j] > vi ? neibs[j] - 1 : neibs[j])
         end
     end
-    lg.graph = new_graph
-    lg.labels = new_labels
-    return lg
+    g.graph = new_graph
+    g.labels = new_labels
+    return g
 end
 
 # contruct line graph from a sparse adjoint martix
@@ -86,6 +87,10 @@ function line_graph(adjacency_mat::SparseMatrixCSC; labels::Vector{TL}=[1:size(a
     end
 
     return LabeledSimpleGraph(g, labels)
+end
+
+function line_graph(g::SimpleGraph, labels::Vector = [1:ne(g)...])
+    return line_graph(adjacency_mat(g), labels=labels)
 end
 
 # contruct a simple graph from the adjoint martix
