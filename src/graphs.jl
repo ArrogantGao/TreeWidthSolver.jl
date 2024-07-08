@@ -1,73 +1,9 @@
-using Graphs, SparseArrays
-
-# define a new structure called for labeled simple graph, where all vertices of the graph have unique labels    
-mutable struct LabeledSimpleGraph{TG, TL}
-    graph::SimpleGraph{TG}
-    labels::Vector{TL}
-
-    function LabeledSimpleGraph(graph::SimpleGraph{TG}, labels::Vector{TL}) where {TG, TL}
-        if length(unique(labels)) != nv(graph)
-            throw(ArgumentError("The number of labels should be equal to the number of vertices"))
-        end
-        new{TG, TL}(graph, labels)
+function graph_from_tuples(n::Int, edgs)
+    g = SimpleGraph(n)
+    for (i, j) in edgs
+        add_edge!(g, i, j)
     end
-
-    function LabeledSimpleGraph(graph::SimpleGraph{TG}) where {TG}
-        new{TG, Int}(graph, 1:nv(graph))
-    end
-end
-
-LabeledSimpleGraph(nv::Int) = LabeledSimpleGraph(SimpleGraph(nv))
-LabeledSimpleGraph(adj::SparseMatrixCSC) = LabeledSimpleGraph(simple_graph(adj))
-
-function label2vec(g::LabeledSimpleGraph{TG, TL}, l::TL) where{TG, TL}
-    if l in g.labels
-        return findfirst(isequal(l), g.labels)
-    else
-        throw(ArgumentError("The label $l is not in the graph"))
-    end
-end
-
-Graphs.nv(g::LabeledSimpleGraph) = nv(g.graph)
-Graphs.ne(g::LabeledSimpleGraph) = ne(g.graph)
-Graphs.edges(g::LabeledSimpleGraph) = edges(g.graph)
-Graphs.neighbors(g::LabeledSimpleGraph{TG, TL}, v::TL) where{TG, TL} = [g.labels[vi] for vi in neighbors(g.graph, label2vec(g, v))]
-
-function Graphs.add_edge!(g::LabeledSimpleGraph, src::Int, dst::Int)
-    add_edge!(g.graph, src, dst)
-    return g
-end
-
-function Graphs.add_vertex!(g::LabeledSimpleGraph{TG, TL}, label::TL) where{TG, TL}
-    add_vertex!(g.graph)
-    push!(g.labels, label)
-    return g
-end
-
-Base.show(io::IO, g::LabeledSimpleGraph{TG, TL}) where{TG, TL} = print(io,"LabeledSimpleGraph{$TG, $TL}, {$(nv(g)), $(ne(g))}, labels ", g.labels)
-Base.copy(g::LabeledSimpleGraph{TG, TL}) where{TG, TL} = LabeledSimpleGraph(copy(g.graph), copy(g.labels))
-Base.:(==)(g1::LabeledSimpleGraph{TG, TL}, g2::LabeledSimpleGraph{TG, TL}) where{TG, TL} = (g1.graph == g2.graph) && (g1.labels == g2.labels)
-
-function eliminate!(g::LabeledSimpleGraph{TG, TL}, v::TL) where{TG, TL}
-    vi = label2vec(g, v)
-    new_graph = SimpleGraph(nv(g) - 1)
-    new_labels = g.labels[1:end .!= vi]
-    for e in edges(g)
-        if e.src != vi && e.dst != vi
-            add_edge!(new_graph, e.src > vi ? e.src - 1 : e.src, e.dst > vi ? e.dst - 1 : e.dst)
-        end
-    end
-
-    neibs = neighbors(g.graph, vi)
-
-    for i in 1:length(neibs) - 1
-        for j in i + 1:length(neibs)
-            add_edge!(new_graph, neibs[i] > vi ? neibs[i] - 1 : neibs[i], neibs[j] > vi ? neibs[j] - 1 : neibs[j])
-        end
-    end
-    g.graph = new_graph
-    g.labels = new_labels
-    return g
+    g
 end
 
 # contruct line graph from a sparse adjoint martix
@@ -111,13 +47,84 @@ function simple_graph(adjacency_mat::SparseMatrixCSC)
     return g
 end
 
-# contruct the adjacency matrix from a simple graph
-function adjacency_mat(graph::Union{SimpleGraph, LabeledSimpleGraph})
-    rows = Int[]
-    cols = Int[]
-    for (i,edge) in enumerate(edges(graph))
-        push!(rows, edge.src, edge.dst)
-        push!(cols, i, i)
+# the graphs operations defined on labeled graphs
+
+Graphs.nv(g::LabeledSimpleGraph) = nv(g.graph)
+Graphs.vertices(g::LabeledSimpleGraph) = [g.v2l[i] for i in vertices(g.graph)]
+Graphs.ne(g::LabeledSimpleGraph) = ne(g.graph)
+Graphs.edges(g::LabeledSimpleGraph) = [(g.v2l[src(i)], g.v2l[dst(i)]) for i in edges(g.graph)]
+Graphs.neighbors(g::LabeledSimpleGraph{TG, TL, TW}, v::TL) where{TG, TL, TW} = [g.v2l[n] for n in neighbors(g.graph, g.l2v[v])]
+Graphs.has_edge(g::LabeledSimpleGraph{TG, TL, TW}, src::TL, dst::TL) where{TG, TL, TW} = has_edge(g.graph, g.l2v[src], g.l2v[dst])
+
+function Graphs.add_edge!(g::LabeledSimpleGraph{TG, TL, TW}, src::TL, dst::TL) where{TG, TL, TW}
+    add_edge!(g.graph, g.l2v[src], g.l2v[dst])
+    return g
+end
+
+function Graphs.add_vertex!(g::LabeledSimpleGraph{TG, TL, TW}, label::TL) where{TG, TL, TW}
+    add_vertex!(g.graph)
+    g.l2v[label] = nv(g.graph)
+    return g
+end
+
+function is_clique(g::LabeledSimpleGraph{TG, TL, TW}) where{TG, TL, TW}
+    vs = vertices(g)
+    for i in vs, j in vs
+        if i != j && !has_edge(g, i, j) return false end
     end
-    return sparse(rows, cols, ones(Int, length(rows)))
+    return true
+end
+
+
+function is_clique(g::LabeledSimpleGraph{TG, TL, TW}, S::Union{Set{TL}, Vector{TL}}) where{TG, TL, TW}
+    for i in S, j in S
+        if i != j && !has_edge(g, i, j) return false end
+    end
+    return true
+end
+
+function Graphs.induced_subgraph(g::LabeledSimpleGraph{TG, TL, TW}, vertices::Vector{TL}) where{TG, TL, TW}
+    
+    g_new, vertices_old = induced_subgraph(g.graph, [g.l2v[v] for v in vertices])
+    labels = [g.v2l[v] for v in vertices_old]
+    weights = [g.l2w[l] for l in labels]
+
+    return LabeledSimpleGraph(g_new, labels, weights)
+end
+
+function closed_neighbors(g::LabeledSimpleGraph{TG, TL, TW}, S::Union{Set{TL}, Vector{TL}}) where{TG, TL, TW}
+    neibs = Set{TL}(S)
+    for v in S, n in neighbors(g, v)
+        push!(neibs, n)
+    end
+    return neibs
+end
+
+function open_neighbors(g::LabeledSimpleGraph{TG, TL, TW}, S::Union{Set{TL}, Vector{TL}}) where{TG, TL, TW}
+    c_neibs = closed_neighbors(g, S)
+    return setdiff(c_neibs, S)
+end
+
+function components(g::LabeledSimpleGraph{TG, TL, TW}, S::Union{Set{TL}, Vector{TL}}) where{TG, TL, TW}
+    # remove S from graph
+    g_new = induced_subgraph(g, collect(setdiff(Set(vertices(g)), S)))
+    ccs = connected_components(g_new.graph)
+    return Set([Set([g_new.v2l[v] for v in cc]) for cc in ccs])
+end
+
+function is_full_component(g::LabeledSimpleGraph{TG, TL, TW}, S::Union{Set{TL}, Vector{TL}}, C::Union{Set{TL}, Vector{TL}}) where{TG, TL, TW}
+    nc = open_neighbors(g, C)
+    @show nc
+    return Set(S) == Set(nc)
+end
+
+function full_components(g::LabeledSimpleGraph{TG, TL, TW}, S::Set{TL}) where{TG, TL, TW}
+    cs = components(g, S)
+    fcs = Vector{Set{TL}}()
+    for C in cs
+        if is_full_component(g, S, C)
+            push!(fcs, C)
+        end
+    end
+    return Set(fcs)
 end
