@@ -35,5 +35,5 @@ function all_min_sep(G::LabeledSimpleGraph{TG, TL, TW}) where{TG, TL, TW}
         end
     end
 
-    return ΔS
+    return Set(ΔS)
 end

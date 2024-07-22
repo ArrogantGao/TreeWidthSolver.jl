@@ -114,7 +114,6 @@ end
 
 function is_full_component(g::LabeledSimpleGraph{TG, TL, TW}, S::Union{Set{TL}, Vector{TL}}, C::Union{Set{TL}, Vector{TL}}) where{TG, TL, TW}
     nc = open_neighbors(g, C)
-    @show nc
     return Set(S) == Set(nc)
 end
 
@@ -127,4 +126,27 @@ function full_components(g::LabeledSimpleGraph{TG, TL, TW}, S::Set{TL}) where{TG
         end
     end
     return Set(fcs)
+end
+
+function nebi_components(g::LabeledSimpleGraph{TG, TL, TW}, S::Set{TL}) where{TG, TL, TW}
+    cs = components(g, S)
+    nebi_cs = Set{TL}()
+    for c in cs
+        nebi_c = open_neighbors(g, c)
+        for ni in nebi_c
+            push!(nebi_cs, ni)
+        end
+    end
+    return nebi_cs
+end
+
+function complete_subgraph(g::LabeledSimpleGraph{TG, TL, TW}, S::Set{TL}) where{TG, TL, TW}
+    vec_S = collect(S)
+    g_new = copy(g)
+    for i in 1:length(vec_S) - 1
+        for j in i + 1:length(vec_S)
+            add_edge!(g_new, vec_S[i], vec_S[j])
+        end
+    end
+    return g_new
 end

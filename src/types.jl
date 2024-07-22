@@ -32,11 +32,12 @@ LabeledSimpleGraph(nv::Int) = LabeledSimpleGraph(SimpleGraph(nv))
 LabeledSimpleGraph(adj::SparseMatrixCSC) = LabeledSimpleGraph(simple_graph(adj))
 
 Base.show(io::IO, g::LabeledSimpleGraph{TG, TL, TW}) where{TG, TL, TW} = print(io,"LabeledSimpleGraph{$TG, $TL, $TW}, nv: $(nv(g)), ne: $(ne(g))")
-Base.copy(g::LabeledSimpleGraph{TG, TL, TW}) where{TG, TL, TW} = LabeledSimpleGraph(copy(g.graph), copy(g.l2v), copy(g.l2w))
+# Base.copy(g::LabeledSimpleGraph{TG, TL, TW}) where{TG, TL, TW} = LabeledSimpleGraph(copy(g.graph), copy(g.l2v), copy(g.l2w))
+Base.copy(g::LabeledSimpleGraph{TG, TL, TW}) where{TG, TL, TW} = LabeledSimpleGraph(copy(g.graph), collect(keys(g.l2v)), collect(values(g.l2w)))
 Base.:(==)(g1::LabeledSimpleGraph{TG, TL, TW}, g2::LabeledSimpleGraph{TG, TL, TW}) where{TG, TL, TW} = (g1.graph == g2.graph) && (g1.l2v == g2.l2v) && (g1.l2w == g2.l2w)
 
 
-# This part is not necessary for now, commented until data structure is fixed
+# This part is not necessary for now, commented until data structure is stable
 # contruct the adjacency matrix from a simple graph
 
 # function adjacency_mat(graph::Union{SimpleGraph, LabeledSimpleGraph})
