@@ -1,4 +1,4 @@
-using TamakiTreeWidth: LabeledSimpleGraph, line_graph, simple_graph, adjacency_mat, label2vec
+using TamakiTreeWidth: LabeledSimpleGraph, line_graph, simple_graph, adjacency_mat
 using Graphs, SparseArrays
 using Test
 
@@ -18,5 +18,5 @@ using Test
 
     vecs = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
     lgchar = LabeledSimpleGraph(g, vecs)
-    @test label2vec(lgchar, 'b') == 2
+    @test lgchar.l2v['b'] == 2
 end
