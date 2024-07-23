@@ -1,4 +1,5 @@
-# listing all potentail maximal cliques in a graph
+# listing all potential maximal cliques in a graph
+# following the method provided in BouchitteÃ, Vincent, and Ioan Todinca. “Listing All Potential Maximal Cliques of a Graph.” Theoretical Computer Science, 2002.
 
 function is_pmc(G::LabeledSimpleGraph{TG, TL, TW}, K::Set{TL}) where{TG, TL, TW}
     cs = components(G, K)
@@ -63,10 +64,10 @@ function all_pmc(G::LabeledSimpleGraph{TG, TL, TW}) where{TG, TL, TW}
     for i in 2:nv(G)
         Gi = induced_subgraph(G, [1:i...])
         Δ_Gi = all_min_sep(Gi)
-        Π_Gi = one_more_vetrex(Gi, Gi_0, Π_Gi, Δ_G0, Δ_Gi)
+        Π_Gi = one_more_vetrex(Gi, Gi_0, Π_Gi, Δ_Gi, Δ_G0)
         Δ_G0 = Δ_Gi
         Gi_0 = Gi
     end
 
-    return Δ_G0, Π_Gi
+    return Π_Gi
 end

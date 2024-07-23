@@ -1,3 +1,6 @@
+# generating all minimum separators of a given simple graph
+# following the method provided in Berry, Anne, Jean-Paul Bordat, and Olivier Cogis. “Generating All the Minimal Separators of a Graph.” In Graph-Theoretic Concepts in Computer Science, edited by Peter Widmayer, Gabriele Neyer, and Stephan Eidenbenz, 1665:167–72. Lecture Notes in Computer Science. Berlin, Heidelberg: Springer Berlin Heidelberg, 1999. https://doi.org/10.1007/3-540-46784-X_17.
+
 function is_min_sep(G::LabeledSimpleGraph{TG, TL, TW}, S::Set{TL}) where{TG, TL, TW}
     flag = 0
     for C in components(G, S)
@@ -23,17 +26,26 @@ function all_min_sep(G::LabeledSimpleGraph{TG, TL, TW}) where{TG, TL, TW}
 
     # generation
     ΔS = Vector{Set{TL}}()
-    while !isempty(setdiff(ΔT, ΔS))
-        sd = setdiff(ΔT, ΔS)
-        for S in sd
-            for x in S
-                for C in components(G, S ∪ neighbors(G, x))
-                    push!(ΔT, Set(open_neighbors(G, C)))
-                end
+    for S in ΔT
+        push!(ΔS, S)
+    end
+
+    while !isempty(ΔS)
+        S = pop!(ΔS)
+        RS = Set{TL}[]
+        for x in S
+            for C in components(G, S ∪ neighbors(G, x))
+                push!(RS, Set(open_neighbors(G, C)))
             end
-            push!(ΔS, S)
+        end
+
+        for rs in RS
+            if rs ∉ ΔT
+                push!(ΔT, rs)
+                push!(ΔS, rs)
+            end
         end
     end
 
-    return Set(ΔS)
+    return ΔT
 end

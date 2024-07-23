@@ -7,6 +7,7 @@ using TamakiTreeWidth, Test
     for S in Δ
         @test is_min_sep(lg, S)
     end
+    @test Δ == all_min_sep(lg)
     for Ω in Π
         @test is_pmc(lg, Ω)
     end
