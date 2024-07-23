@@ -11,6 +11,17 @@ function is_min_sep(G::LabeledSimpleGraph{TG, TL, TW}, S::Set{TL}) where{TG, TL,
     return flag ≥ 2
 end
 
+function all_min_sep_naive(G::LabeledSimpleGraph{TG, TL, TW}) where{TG, TL, TW}
+    Π = Set{Set{TL}}()
+    for sets in combinations(collect(keys(G.l2v)))
+        S = Set(sets)
+        if is_min_sep(G, S)
+            push!(Π, S)
+        end
+    end
+    return Π
+end
+
 function all_min_sep(G::LabeledSimpleGraph{TG, TL, TW}) where{TG, TL, TW}
     # initialization
     ΔT = Set{Set{TL}}()

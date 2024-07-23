@@ -134,6 +134,7 @@ function nebi_components(g::LabeledSimpleGraph{TG, TL, TW}, S::Set{TL}) where{TG
     for c in cs
         nebi_c = open_neighbors(g, c)
         for ni in nebi_c
+            @assert ni ∈ S
             push!(nebi_cs, ni)
         end
     end

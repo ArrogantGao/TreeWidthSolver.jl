@@ -18,7 +18,18 @@ function is_pmc(G::LabeledSimpleGraph{TG, TL, TW}, K::Set{TL}) where{TG, TL, TW}
     end
 end
 
-function one_more_vetrex(
+function all_pmc_naive(G::LabeledSimpleGraph{TG, TL, TW}) where{TG, TL, TW}
+    Π = Set{Set{TL}}()
+    for sets in combinations(collect(keys(G.l2v)))
+        K = Set(sets)
+        if is_pmc(G, K)
+            push!(Π, K)
+        end
+    end
+    return Π
+end
+
+function one_more_vertex(
     G_1::LabeledSimpleGraph{TG, TL, TW}, # graph of n + 1 vertices
     G_0::LabeledSimpleGraph{TG, TL, TW}, # G / {a}
     Π_0::Set{Set{TL}}, # p.m.c of G_0
@@ -43,10 +54,12 @@ function one_more_vetrex(
         end
         if (a ∉ S) && (S ∉ Δ_0)
             fcs = full_components(G_1, S)
-            for C in fcs, T in Δ_1
-                t = S ∪ (T ∩ C)
-                if is_pmc(G_1, t)
-                    push!(Π_1, t)
+            for T in Δ_1
+                for C in fcs
+                    t = S ∪ (T ∩ C)
+                    if is_pmc(G_1, t)
+                        push!(Π_1, t)
+                    end
                 end
             end
         end
@@ -57,17 +70,19 @@ end
 
 function all_pmc(G::LabeledSimpleGraph{TG, TL, TW}) where{TG, TL, TW}
 
-    Π_Gi = Set([Set(one(TL))])
+    Π_G1 = Set([Set(one(TL))])
     Δ_G0 = Set{Set{TL}}()
 
-    Gi_0 = induced_subgraph(G, [1])
+    G0 = induced_subgraph(G, [1])
     for i in 2:nv(G)
-        Gi = induced_subgraph(G, [1:i...])
-        Δ_Gi = all_min_sep(Gi)
-        Π_Gi = one_more_vetrex(Gi, Gi_0, Π_Gi, Δ_Gi, Δ_G0)
-        Δ_G0 = Δ_Gi
-        Gi_0 = Gi
+        G1 = induced_subgraph(G, [1:i...])
+        Δ_G1 = all_min_sep(G1)
+        @show Δ_G1
+        Π_G1 = one_more_vertex(G1, G0, Π_G1, Δ_G1, Δ_G0)
+        @show Π_G1
+        Δ_G0 = Δ_G1
+        G0 = G1
     end
 
-    return Π_Gi
+    return Π_G1
 end

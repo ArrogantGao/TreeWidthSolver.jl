@@ -1,14 +1,14 @@
 using TamakiTreeWidth, Test
+using TamakiTreeWidth: all_pmc_naive
 
 @testset "maximum cliques" begin
-    g = random_regular_graph(20, 3)
+    g = random_regular_graph(8, 3)
     lg = LabeledSimpleGraph(g)
-    Δ, Π = all_pmc(lg)
-    for S in Δ
-        @test is_min_sep(lg, S)
-    end
-    @test Δ == all_min_sep(lg)
+    Π = all_pmc(lg)
+    Π_naive = all_pmc_naive(lg)
     for Ω in Π
         @test is_pmc(lg, Ω)
     end
+    @test length(Π) == length(Π_naive)
+    @test Π == Π_naive
 end

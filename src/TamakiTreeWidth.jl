@@ -1,6 +1,6 @@
 module TamakiTreeWidth
 
-using SparseArrays, AbstractTrees, Bijections
+using SparseArrays, AbstractTrees, Bijections, Combinatorics
 using Reexport
 @reexport using Graphs
 
@@ -9,7 +9,7 @@ export LabeledSimpleGraph
 
 export is_min_sep, all_min_sep
 export is_pmc, all_pmc
-export BTDP_exact_tw
+export BTDP_exact_tw, TreeDecomposition, is_treedecomposition
 
 # export DecompositionTreeNode, treewidth, EliminationOrder
 
