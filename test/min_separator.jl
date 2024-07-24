@@ -6,12 +6,14 @@ using TamakiTreeWidth: all_min_sep_naive
     lg = LabeledSimpleGraph(g)
     @test is_min_sep(lg, Set([3, 4]))
 
-    g = random_regular_graph(14, 3)
-    lg = LabeledSimpleGraph(g)
-    Δ = all_min_sep(lg)
-    Δ_naive = all_min_sep_naive(lg)
-    @test Δ == Δ_naive
-    for S in Δ
-        @test is_min_sep(lg, S)
+    for n in 4:2:16
+        g = random_regular_graph(n, 3)
+        lg = LabeledSimpleGraph(g)
+        Δ = all_min_sep(lg)
+        Δ_naive = all_min_sep_naive(lg)
+        @test Δ == Δ_naive
+        for S in Δ
+            @test is_min_sep(lg, S)
+        end
     end
 end

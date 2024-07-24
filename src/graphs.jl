@@ -141,15 +141,14 @@ function nebi_components(g::LabeledSimpleGraph{TG, TL, TW}, S::Set{TL}) where{TG
     return nebi_cs
 end
 
-function complete_subgraph(g::LabeledSimpleGraph{TG, TL, TW}, S::Set{TL}) where{TG, TL, TW}
+function complete!(g::LabeledSimpleGraph{TG, TL, TW}, S::Set{TL}) where{TG, TL, TW}
     vec_S = collect(S)
-    g_new = copy(g)
     for i in 1:length(vec_S) - 1
         for j in i + 1:length(vec_S)
-            add_edge!(g_new, vec_S[i], vec_S[j])
+            add_edge!(g, vec_S[i], vec_S[j])
         end
     end
-    return g_new
+    return g
 end
 
 function relization(g::LabeledSimpleGraph{TG, TL, TW}, block::Block{TL}) where{TG, TL, TW}

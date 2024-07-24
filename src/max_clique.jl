@@ -9,8 +9,13 @@ function is_pmc(G::LabeledSimpleGraph{TG, TL, TW}, K::Set{TL}) where{TG, TL, TW}
         end
     end
 
-    SGK = nebi_components(G, K)
-    GSGKK = complete_subgraph(G, SGK)
+    GSGKK = copy(G)
+    for C in cs
+        neibs_c = open_neighbors(G, C)
+        @assert neibs_c ⊆ K
+        complete!(GSGKK, neibs_c)
+    end
+
     if is_clique(GSGKK, K)
         return true
     else
@@ -52,7 +57,8 @@ function one_more_vertex(
         if is_pmc(G_1, S ∪ a)
             push!(Π_1, S ∪ a)
         end
-        if (a ∉ S) && (S ∉ Δ_0)
+        # if (a ∉ S) && (S ∉ Δ_0)
+        if (S ∉ Δ_0)
             fcs = full_components(G_1, S)
             for T in Δ_1
                 for C in fcs
@@ -77,9 +83,9 @@ function all_pmc(G::LabeledSimpleGraph{TG, TL, TW}) where{TG, TL, TW}
     for i in 2:nv(G)
         G1 = induced_subgraph(G, [1:i...])
         Δ_G1 = all_min_sep(G1)
-        @show Δ_G1
+        # @show Δ_G1
         Π_G1 = one_more_vertex(G1, G0, Π_G1, Δ_G1, Δ_G0)
-        @show Π_G1
+        # @show Π_G1
         Δ_G0 = Δ_G1
         G0 = G1
     end

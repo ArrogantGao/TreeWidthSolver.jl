@@ -47,7 +47,7 @@ function BTDP_exact_tw(G::LabeledSimpleGraph{TG, TL, TW}, Π::Set{Set{TL}}) wher
         push!(T, (Ω, Set{TL}(), Set{TL}(vertices(G))))
         for D in components(G, Ω)
             S = Set{TL}(open_neighbors(G, D))
-            for C in components(G, S)
+            for C in full_components(G, S)
                 if (Ω ⊆ S ∪ C) && (S ⊊ Ω)
                     push!(T, (Ω, S, C))
                 end
@@ -76,9 +76,8 @@ function BTDP_exact_tw(G::LabeledSimpleGraph{TG, TL, TW}, Π::Set{Set{TL}}) wher
 
         for C2 in CS2
             S2 = open_neighbors(G, C2)
-            if is_min_sep(G, S2)
-                cost = max(cost, dp[(S2, C2)])
-            end
+            @assert is_min_sep(G, S2)
+            cost = max(cost, dp[(S2, C2)])
         end
         if cost < dp[(S, C)]
             dp[(S, C)] = cost
