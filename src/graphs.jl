@@ -163,3 +163,27 @@ function relization(g::LabeledSimpleGraph{TG, TL, TW}, block::Block{TL}) where{T
     end
     return R
 end
+
+function eliminate(g::LabeledSimpleGraph{TG, TL, TW}, v::TL) where{TG, TL, TW}
+    vi = g.l2v[v]
+    new_graph = SimpleGraph(nv(g) - 1)
+    new_labels = [g.v2l[i] for i in 1:nv(g) if i != vi]
+    new_weights = [g.l2w[li] for li in new_labels]
+
+    for e in edges(g.graph)
+        if src != vi && e.dst != vi
+            add_edge!(new_graph, e.src > vi ? e.src - 1 : e.src, e.dst > vi ? e.dst - 1 : e.dst)
+        end
+    end
+
+    neibs = neighbors(g.graph, vi)
+
+    for i in 1:length(neibs) - 1
+        for j in i + 1:length(neibs)
+            add_edge!(new_graph, neibs[i] > vi ? neibs[i] - 1 : neibs[i], neibs[j] > vi ? neibs[j] - 1 : neibs[j])
+        end
+    end
+
+    g = LabeledSimpleGraph(new_graph, new_labels, new_weights)
+    return g
+end

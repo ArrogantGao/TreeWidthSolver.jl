@@ -59,7 +59,7 @@ function _elimination_order(tree::DecompositionTreeNode{T}) where{T}
     for node in PostOrderDFS(tree)
         parent = node.parent
         for v in node.bag
-            if !(v in order) && (isnothing(parent) || (!isnothing(parent) && !(v in parent.bag)))
+            if (isnothing(parent) || (!isnothing(parent) && !(v in parent.bag)))
                 pushfirst!(order, v)
             end
         end
@@ -69,7 +69,7 @@ function _elimination_order(tree::DecompositionTreeNode{T}) where{T}
 end
 
 # recover the tree decomposition from an elimination order
-function decomposition_tree(order::EliminationOrder{TL}, graph::LabeledSimpleGraph{TG, TL, TW}; root::Int = 1) where{TG, TL, TW}
+function decomposition_tree(order::EliminationOrder{TL}, graph::LabeledSimpleGraph{TG, TL, TW}; root::TL = 1) where{TG, TL, TW}
     bags, tree = _tree_bags(order, graph)
     root_node = DecompositionTreeNode(bags[root])
     return _tree_decomposition!(root_node, bags, tree, root)
@@ -91,7 +91,7 @@ function _tree_bags(order::EliminationOrder{TL}, graph::LabeledSimpleGraph{TG, T
         b = [u]
         ib = length(B) + 1
         if !isempty(Nᵤ) b = [Nᵤ; u] end
-        eliminate!(G, u)
+        G = eliminate(G, u)
 
         drop_bag = false
         # keep only maximal cliques

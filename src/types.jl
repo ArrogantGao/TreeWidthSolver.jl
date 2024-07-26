@@ -52,28 +52,6 @@ function adjacency_mat(graph::SimpleGraph)
     return sparse(rows, cols, ones(Int, length(rows)))
 end
 
-function eliminate!(g::LabeledSimpleGraph{TG, TL, TW}, v::TL) where{TG, TL, TW}
-    vi = g.l2v[v]
-    new_graph = SimpleGraph(nv(g) - 1)
-    new_labels = g.labels[1:end .!= vi]
-    for e in edges(g)
-        if e.src != vi && e.dst != vi
-            add_edge!(new_graph, e.src > vi ? e.src - 1 : e.src, e.dst > vi ? e.dst - 1 : e.dst)
-        end
-    end
-
-    neibs = neighbors(g.graph, vi)
-
-    for i in 1:length(neibs) - 1
-        for j in i + 1:length(neibs)
-            add_edge!(new_graph, neibs[i] > vi ? neibs[i] - 1 : neibs[i], neibs[j] > vi ? neibs[j] - 1 : neibs[j])
-        end
-    end
-    g.graph = new_graph
-    g.labels = new_labels
-    return g
-end
-
 struct Block{T}
     separator::Set{T}
     component::Set{T}

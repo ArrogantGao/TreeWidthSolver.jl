@@ -5,19 +5,21 @@
 
 struct TreeDecomposition{TW, TL}
     tw::TW
-    treebags::Vector{Set{TL}}
+    tree::DecompositionTreeNode{TL}
 end
 
 function is_treedecomposition(G::LabeledSimpleGraph{TG, TL, TW}, td::TreeDecomposition{TW, TL}) where{TG, TL, TW}
+    treebags = [node.bag for node in collect(PreOrderDFS(td.tree))]
+
     # all vertices in G are in some bag
-    if Set(foldr(∪, collect.(td.treebags))) != Set(vertices(G))
+    if Set(foldr(∪, collect.(treebags))) != Set(vertices(G))
         return false
     end
 
     # all edges in G are in some bag
     for (i, j) in edges(G)
         flag = false
-        for Ω in td.treebags
+        for Ω in treebags
             if (i in Ω && j in Ω)
                 flag = true
             end
@@ -27,15 +29,30 @@ function is_treedecomposition(G::LabeledSimpleGraph{TG, TL, TW}, td::TreeDecompo
         end
     end
 
+    # all treebags containing the same vertex form a connected subtree
+    eo = EliminationOrder(td.tree)
+    if (length(eo.order) != nv(G)) || (unique(eo.order) != eo.order)
+        return false
+    end
+
     return true
 end
 
-function clique_f(G::LabeledSimpleGraph{TG, TL, TW}, W::Set{TL}) where {TG, TL, TW}
+function clique_max(G::LabeledSimpleGraph{TG, TL, TW}, W::Set{TL}) where {TG, TL, TW}
     fw = zero(TW)
     for l in W
         fw += G.l2w[l]
     end
     return fw - one(TW)
+end
+
+function res_components(G::LabeledSimpleGraph{TG, TL, TW}, C::Set{TL}, Ω::Set{TL}) where {TG, TL, TW}
+
+    g_new = induced_subgraph(G, collect(setdiff(C, Ω)))
+    ccs = connected_components(g_new.graph)
+    CS2 = [Set([g_new.v2l[v] for v in cc]) for cc in ccs]
+
+    return CS2
 end
 
 # The BT-DP algorithm for computing the exact tree width of a given graph
@@ -68,15 +85,11 @@ function BTDP_exact_tw(G::LabeledSimpleGraph{TG, TL, TW}, Π::Set{Set{TL}}) wher
 
     for t in T
         Ω, S, C = t
-        cost = clique_f(G, Ω)
+        cost = clique_max(G, Ω)
 
-        g_new = induced_subgraph(G, collect(setdiff(C, Ω)))
-        ccs = connected_components(g_new.graph)
-        CS2 = [Set([g_new.v2l[v] for v in cc]) for cc in ccs]
-
+        CS2 = res_components(G, C, Ω)
         for C2 in CS2
             S2 = open_neighbors(G, C2)
-            @assert is_min_sep(G, S2)
             cost = max(cost, dp[(S2, C2)])
         end
         if cost < dp[(S, C)]
@@ -86,22 +99,27 @@ function BTDP_exact_tw(G::LabeledSimpleGraph{TG, TL, TW}, Π::Set{Set{TL}}) wher
     end
 
     # reconstrcution step
-    tree_bags = Vector{Set{TL}}()
-    Q = [(Set{TL}(), Set{TL}(vertices(G)))]
-    while !isempty(Q)
-        S, C = popfirst!(Q)
-        Ω = optChoice[(S, C)]
-        push!(tree_bags, Ω)
+    tree = construct_tree(G, optChoice)
+    tw = dp[(Set{TL}(), Set{TL}(vertices(G)))]
+    return TreeDecomposition(tw, tree)
+end
 
-        g_new = induced_subgraph(G, collect(setdiff(C, Ω)))
-        ccs = connected_components(g_new.graph)
-        CS2 = Set([Set([g_new.v2l[v] for v in cc]) for cc in ccs])
+function construct_tree(G::LabeledSimpleGraph{TG, TL, TW}, optChoice::Dict{Tuple{Set{TL}, Set{TL}}, Set{TL}}) where{TG, TL, TW}
+    S0, C0 = Set{TL}(), Set{TL}(vertices(G))
+    Ω0 = optChoice[(S0, C0)]
+    root_node = DecompositionTreeNode(Ω0)
+    _construct_tree!(root_node, optChoice, G, C0)
+    return root_node
+end
 
-        for C2 in CS2
-            S2 = open_neighbors(G, C2)
-            push!(Q, (S2, C2))
-        end
+function _construct_tree!(node::DecompositionTreeNode{TL}, optChoice::Dict{Tuple{Set{TL}, Set{TL}}, Set{TL}}, G::LabeledSimpleGraph{TG, TL, TW}, C::Set{TL}) where{TG, TL, TW}
+    Ω = node.bag
+    CS2 = res_components(G, C, Ω)
+    for C2 in CS2
+        S2 = open_neighbors(G, C2)
+        Ω2 = optChoice[(S2, C2)]
+        add_child!(node, Ω2)
+        _construct_tree!(node.children[end], optChoice, G, C2)
     end
-
-    return TreeDecomposition(dp[Set{TL}(), Set{TL}(vertices(G))], tree_bags)
+    return nothing
 end
