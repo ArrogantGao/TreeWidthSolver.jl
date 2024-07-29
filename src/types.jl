@@ -51,17 +51,3 @@ function adjacency_mat(graph::SimpleGraph)
     end
     return sparse(rows, cols, ones(Int, length(rows)))
 end
-
-struct Block{T}
-    separator::Set{T}
-    component::Set{T}
-end
-
-Base.:(==)(b1::Block{T}, b2::Block{T}) where {T} = (b1.separator == b2.separator) && (b1.component == b2.component)
-function block2tuple(b::Block{T}) where {T}
-    return (b.separator, b.component)
-end
-
-function total_length(b::Block{T}) where {T}
-    return length(b.separator) + length(b.component)
-end
