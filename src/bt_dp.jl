@@ -123,3 +123,9 @@ function _construct_tree!(node::DecompositionTreeNode{TL}, optChoice::Dict{Tuple
     end
     return nothing
 end
+
+function exact_treewidth(G::LabeledSimpleGraph{TG, TL, TW}) where {TG, TL, TW}
+    Π = all_pmc(G)
+    td = BTDP_exact_tw(G, Π)
+    return td
+end

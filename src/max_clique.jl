@@ -89,11 +89,12 @@ end
 
 function all_pmc(G::LabeledSimpleGraph{TG, TL, TW}) where{TG, TL, TW}
 
-    Π_G1 = Set([Set(one(TL))])
+    vlist = [G.v2l[1]]
+    G0 = induced_subgraph(G, vlist)
+
+    Π_G1 = Set([Set(vlist[1])])
     Δ_G0 = Set{Set{TL}}()
 
-    vlist = [G.v2l[1]]
-    G0 = induced_subgraph(G, [1])
     for i in 2:nv(G)
         a = collect(open_neighbors(G, vlist))[1]
         push!(vlist, a)

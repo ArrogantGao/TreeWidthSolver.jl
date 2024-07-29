@@ -10,6 +10,7 @@ export LabeledSimpleGraph
 export is_min_sep, all_min_sep
 export is_pmc, all_pmc, all_pmc_naive
 export BTDP_exact_tw, TreeDecomposition, is_treedecomposition
+export exact_treewidth
 
 export DecompositionTreeNode, treewidth, EliminationOrder
 
