@@ -3,6 +3,17 @@ uuid = "7d267fc5-9ace-409f-a54c-cd2374872a55"
 authors = ["Xuanzhao Gao <gaoxuanzhao@gmail.com> and contributors"]
 version = "1.0.0-DEV"
 
+[deps]
+AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
+Bijections = "e2ed5e7c-b2de-5872-ae92-c73ca462fb04"
+Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
+Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
+LuxorGraphPlot = "1f49bdf2-22a7-4bc4-978b-948dc219fbbc"
+OMEinsum = "ebe7aa44-baf0-506c-a96f-8464559b3922"
+OMEinsumContractionOrders = "6f22d1fd-8eed-4bb7-9776-e7d684900715"
+Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+
 [compat]
 julia = "1.6.7"
 
