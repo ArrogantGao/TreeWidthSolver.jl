@@ -3,12 +3,25 @@
 
 function is_pmc(G::LabeledSimpleGraph{TG, TL, TW}, K::Set{TL}) where{TG, TL, TW}
     cs = components(G, K)
+    if has_full_component(G, K, cs)
+        return false
+    end
+    if !is_cliquish(G, K, cs)
+        return false
+    end
+    return true
+end
+
+function has_full_component(G::LabeledSimpleGraph{TG, TL, TW}, K::Set{TL}, cs::Set{Set{TL}}) where{TG, TL, TW}
     for C in cs
         if is_full_component(G, K, C)
-            return false
+            return true
         end
     end
+    return false
+end
 
+function is_cliquish(G::LabeledSimpleGraph{TG, TL, TW}, K::Set{TL}, cs::Set{Set{TL}}) where{TG, TL, TW}
     GSGKK = copy(G)
     for C in cs
         neibs_c = open_neighbors(G, C)
@@ -43,13 +56,14 @@ function one_more_vertex(
     ) where{TG, TL, TW}
 
     a = collect(setdiff(keys(G_1.l2v), keys(G_0.l2v)))[1]
-    Π_1 = Set([Set{TL}()])
+    Π_1 = Set{Set{TL}}()
 
     for Ω_0 in Π_0
-        if is_pmc(G_1, Ω_0)
-            push!(Π_1, Ω_0)
-        elseif is_pmc(G_1, Ω_0 ∪ a)
+        cs_Ω = components(G_1, Ω_0)
+        if has_full_component(G_1, Ω_0, cs_Ω)
             push!(Π_1, Ω_0 ∪ a)
+        else
+            push!(Π_1, Ω_0)
         end
     end
 
@@ -58,7 +72,6 @@ function one_more_vertex(
             push!(Π_1, S ∪ a)
         end
         if (a ∉ S) && (S ∉ Δ_0)
-        # if (S ∉ Δ_0)
             fcs = full_components(G_1, S)
             for T in Δ_1
                 for C in fcs
@@ -76,12 +89,15 @@ end
 
 function all_pmc(G::LabeledSimpleGraph{TG, TL, TW}) where{TG, TL, TW}
 
-    Π_G1 = Set([Set(one(TL)), Set{TL}()])
+    Π_G1 = Set([Set(one(TL))])
     Δ_G0 = Set{Set{TL}}()
 
+    vlist = [G.v2l[1]]
     G0 = induced_subgraph(G, [1])
     for i in 2:nv(G)
-        G1 = induced_subgraph(G, [1:i...])
+        a = collect(open_neighbors(G, vlist))[1]
+        push!(vlist, a)
+        G1 = induced_subgraph(G, vlist)
         Δ_G1 = all_min_sep(G1)
         Π_G1 = one_more_vertex(G1, G0, Π_G1, Δ_G1, Δ_G0)
         Δ_G0 = Δ_G1
