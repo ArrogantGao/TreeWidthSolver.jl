@@ -151,19 +151,6 @@ function complete!(g::LabeledSimpleGraph{TG, TL, TW}, S::Set{TL}) where{TG, TL, 
     return g
 end
 
-function relization(g::LabeledSimpleGraph{TG, TL, TW}, block::Block{TL}) where{TG, TL, TW}
-    S = block.separator
-    C = block.component
-    R = induced_subgraph(g, S ∪ C)
-    vec_S = collect(S)
-    for i in 1:length(vec_S) - 1
-        for j in i + 1:length(vec_S)
-            add_edge!(R, vec_S[i], vec_S[j])
-        end
-    end
-    return R
-end
-
 function eliminate(g::LabeledSimpleGraph{TG, TL, TW}, v::TL) where{TG, TL, TW}
     vi = g.l2v[v]
     new_graph = SimpleGraph(nv(g) - 1)
