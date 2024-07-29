@@ -1,4 +1,4 @@
-using TamakiTreeWidth: LabeledSimpleGraph, line_graph, simple_graph, adjacency_mat
+using TreeWidthSolver: LabeledSimpleGraph, line_graph, simple_graph, adjacency_mat
 using Graphs, SparseArrays
 using Test
 

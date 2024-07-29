@@ -1,4 +1,4 @@
-using TamakiTreeWidth, Test
+using TreeWidthSolver, Test
 
 @testset "maximum cliques" begin
     for n in 4:2:12

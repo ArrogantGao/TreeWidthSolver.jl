@@ -1,14 +1,14 @@
-using TamakiTreeWidth
+using TreeWidthSolver
 using Documenter
 
-DocMeta.setdocmeta!(TamakiTreeWidth, :DocTestSetup, :(using TamakiTreeWidth); recursive=true)
+DocMeta.setdocmeta!(TreeWidthSolver, :DocTestSetup, :(using TreeWidthSolver); recursive=true)
 
 makedocs(;
-    modules=[TamakiTreeWidth],
+    modules=[TreeWidthSolver],
     authors="Xuanzhao Gao <gaoxuanzhao@gmail.com> and contributors",
-    sitename="TamakiTreeWidth.jl",
+    sitename="TreeWidthSolver.jl",
     format=Documenter.HTML(;
-        canonical="https://ArrogantGao.github.io/TamakiTreeWidth.jl",
+        canonical="https://ArrogantGao.github.io/TreeWidthSolver.jl",
         edit_link="main",
         assets=String[],
     ),
@@ -18,6 +18,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/ArrogantGao/TamakiTreeWidth.jl",
+    repo="github.com/ArrogantGao/TreeWidthSolver.jl",
     devbranch="main",
 )

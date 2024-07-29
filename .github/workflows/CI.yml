@@ -73,9 +73,9 @@ jobs:
         shell: julia --project=docs --color=yes {0}
         run: |
           using Documenter: DocMeta, doctest
-          using TamakiTreeWidth
-          DocMeta.setdocmeta!(TamakiTreeWidth, :DocTestSetup, :(using TamakiTreeWidth); recursive=true)
-          doctest(TamakiTreeWidth)
+          using TreeWidthSolver
+          DocMeta.setdocmeta!(TreeWidthSolver, :DocTestSetup, :(using TreeWidthSolver); recursive=true)
+          doctest(TreeWidthSolver)
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1

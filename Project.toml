@@ -1,4 +1,4 @@
-name = "TamakiTreeWidth"
+name = "TreeWidthSolver"
 uuid = "7d267fc5-9ace-409f-a54c-cd2374872a55"
 authors = ["Xuanzhao Gao <gaoxuanzhao@gmail.com> and contributors"]
 version = "1.0.0-DEV"

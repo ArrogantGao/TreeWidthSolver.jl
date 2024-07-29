@@ -1,7 +1,7 @@
-using TamakiTreeWidth
+using TreeWidthSolver
 using Test
 
-@testset "TamakiTreeWidth.jl" begin
+@testset "TreeWidthSolver.jl" begin
     include("graphs.jl")
     include("tree_decomposition.jl")
     include("min_separator.jl")

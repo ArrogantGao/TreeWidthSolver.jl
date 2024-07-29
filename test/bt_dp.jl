@@ -1,4 +1,4 @@
-using TamakiTreeWidth, Test
+using TreeWidthSolver, Test
 using OMEinsum, OMEinsumContractionOrders
 
 @testset "BT-DP algorithm" begin

@@ -1,4 +1,4 @@
-module TamakiTreeWidth
+module TreeWidthSolver
 
 using SparseArrays, AbstractTrees, Bijections, Combinatorics
 using Reexport

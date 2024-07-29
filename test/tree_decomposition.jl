@@ -1,5 +1,5 @@
-using TamakiTreeWidth
-using TamakiTreeWidth: isleaf, add_child!, decomposition_tree
+using TreeWidthSolver
+using TreeWidthSolver: isleaf, add_child!, decomposition_tree
 using Graphs
 using Test
 
