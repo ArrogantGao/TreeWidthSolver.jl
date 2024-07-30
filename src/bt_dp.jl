@@ -8,6 +8,10 @@ struct TreeDecomposition{TW, TL}
     tree::DecompositionTreeNode{TL}
 end
 
+function Base.show(io::IO, td::TreeDecomposition)
+    print(io, "tree width: $(td.tw)\n", "tree decomposition:\n$(td.tree)")
+end
+
 function is_treedecomposition(G::LabeledSimpleGraph{TG, TL, TW}, td::TreeDecomposition{TW, TL}) where{TG, TL, TW}
     treebags = [node.bag for node in collect(PreOrderDFS(td.tree))]
 

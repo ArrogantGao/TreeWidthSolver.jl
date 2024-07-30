@@ -17,6 +17,6 @@ using Test
     @test lgc == lg1
 
     vecs = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
-    lgchar = LabeledSimpleGraph(g, vecs)
+    lgchar = LabeledSimpleGraph(g, labels = vecs)
     @test lgchar.l2v['b'] == 2
 end

@@ -20,11 +20,8 @@ mutable struct LabeledSimpleGraph{TG, TL, TW}
         new{TG, TL, TW}(graph, b, bb, Dict(zip(labels, weights)))
     end
 
-    function LabeledSimpleGraph(graph::SimpleGraph{TG}) where {TG}
-        LabeledSimpleGraph(graph, collect(1:nv(graph)), ones(Int, nv(graph)))
-    end
-    function LabeledSimpleGraph(graph::SimpleGraph{TG}, labels::Vector{TL}) where {TG, TL}
-        LabeledSimpleGraph(graph, labels, ones(Int, nv(graph)))
+    function LabeledSimpleGraph(graph::SimpleGraph{TG}; labels::Vector{TL} = collect(1:nv(graph)), weights::Vector{TW} = ones(Int, nv(graph))) where {TG, TL, TW}
+        LabeledSimpleGraph(graph, labels, weights)
     end
     function LabeledSimpleGraph(graph::SimpleGraph{TG}, l2v::Bijection{TL, TG}, l2w::Dict{TL, TW}) where {TG, TL, TW}
         return new{TG, TL, TW}(graph, l2v, active_inv(l2v), l2w)
