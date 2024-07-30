@@ -29,7 +29,7 @@ using Test
         add_edge!(g, src, dst)
     end
     lg = LabeledSimpleGraph(g)
-    elimi = EliminationOrder([1, 2, 5, 6, 3, 4])
+    elimi = EliminationOrder([4, 3, 6, 5, 2, 1])
     tree = decomposition_tree(elimi, lg, root = 3)
 
     tree_exact = DecompositionTreeNode([4, 3])
