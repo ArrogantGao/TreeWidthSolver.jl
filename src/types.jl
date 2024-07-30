@@ -51,3 +51,11 @@ function adjacency_mat(graph::SimpleGraph)
     end
     return sparse(rows, cols, ones(Int, length(rows)))
 end
+
+function clique_max(G::LabeledSimpleGraph{TG, TL, TW}, W::Set{TL}) where {TG, TL, TW}
+    fw = zero(TW)
+    for l in W
+        fw += G.l2w[l]
+    end
+    return fw - one(TW)
+end

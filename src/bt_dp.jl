@@ -38,14 +38,6 @@ function is_treedecomposition(G::LabeledSimpleGraph{TG, TL, TW}, td::TreeDecompo
     return true
 end
 
-function clique_max(G::LabeledSimpleGraph{TG, TL, TW}, W::Set{TL}) where {TG, TL, TW}
-    fw = zero(TW)
-    for l in W
-        fw += G.l2w[l]
-    end
-    return fw - one(TW)
-end
-
 function res_components(G::LabeledSimpleGraph{TG, TL, TW}, C::Set{TL}, Ω::Set{TL}) where {TG, TL, TW}
 
     g_new = induced_subgraph(G, collect(setdiff(C, Ω)))
@@ -90,7 +82,11 @@ function BTDP_exact_tw(G::LabeledSimpleGraph{TG, TL, TW}, Π::Set{Set{TL}}) wher
         CS2 = res_components(G, C, Ω)
         for C2 in CS2
             S2 = open_neighbors(G, C2)
-            cost = max(cost, dp[(S2, C2)])
+            if haskey(dp, (S2, C2))
+                cost = max(cost, dp[(S2, C2)])
+            else
+                cost = typemax(TW)
+            end
         end
         if cost < dp[(S, C)]
             dp[(S, C)] = cost
@@ -99,8 +95,11 @@ function BTDP_exact_tw(G::LabeledSimpleGraph{TG, TL, TW}, Π::Set{Set{TL}}) wher
     end
 
     # reconstrcution step
-    tree = construct_tree(G, optChoice)
     tw = dp[(Set{TL}(), Set{TL}(vertices(G)))]
+    if tw == typemax(TW)
+        return nothing
+    end
+    tree = construct_tree(G, optChoice)
     return TreeDecomposition(tw, tree)
 end
 
@@ -127,5 +126,22 @@ end
 function exact_treewidth(G::LabeledSimpleGraph{TG, TL, TW}) where {TG, TL, TW}
     Π = all_pmc(G)
     td = BTDP_exact_tw(G, Π)
+    return td
+end
+
+function iterative_exact_treewidth(G::LabeledSimpleGraph{TG, TL, TW}; lb::TW = one(TW), ub::TW = typemax(TW)) where {TG, TL, TW}
+    i = lb
+    td = nothing
+    while isnothing(td)
+        Π = all_pmc_ub(G, i)
+        if !isempty(Π)
+            td = BTDP_exact_tw(G, Π)
+        end
+        i += 1
+        if i > ub
+            @warn "tree width not found in the given interval"
+            break
+        end
+    end
     return td
 end

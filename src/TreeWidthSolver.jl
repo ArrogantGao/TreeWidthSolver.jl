@@ -8,9 +8,9 @@ export line_graph, simple_graph, adjacency_mat, graph_from_tuples
 export LabeledSimpleGraph
 
 export is_min_sep, all_min_sep
-export is_pmc, all_pmc, all_pmc_naive
+export is_pmc, all_pmc, all_pmc_naive, all_pmc_ub
 export BTDP_exact_tw, TreeDecomposition, is_treedecomposition
-export exact_treewidth
+export exact_treewidth, iterative_exact_treewidth
 
 export DecompositionTreeNode, treewidth, EliminationOrder
 
