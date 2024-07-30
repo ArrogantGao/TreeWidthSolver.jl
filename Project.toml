@@ -8,7 +8,6 @@ AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
 Bijections = "e2ed5e7c-b2de-5872-ae92-c73ca462fb04"
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
 Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
-Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [compat]
@@ -16,7 +15,6 @@ AbstractTrees = "0.4.5"
 Bijections = "0.1.7"
 Combinatorics = "1.0.2"
 Graphs = "1.11.2"
-Reexport = "1.2.2"
 SparseArrays = "1.10.0"
 julia = "1.10"
 
@@ -24,4 +22,4 @@ julia = "1.10"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "Graphs"]
+test = ["Test"]

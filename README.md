@@ -1,7 +1,8 @@
 # TreeWidthSolver.jl
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://ArrogantGao.github.io/TreeWidthSolver.jl/stable/)
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://ArrogantGao.github.io/TreeWidthSolver.jl/dev/)
+<!-- documents will be add later -->
+<!-- [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://ArrogantGao.github.io/TreeWidthSolver.jl/stable/) -->
+<!-- [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://ArrogantGao.github.io/TreeWidthSolver.jl/dev/) -->
 [![Build Status](https://github.com/ArrogantGao/TreeWidthSolver.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/ArrogantGao/TreeWidthSolver.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/ArrogantGao/TamakiTreeWidth.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/ArrogantGao/TamakiTreeWidth.jl)
 
@@ -16,7 +17,7 @@ Open a Julia REPL and type `]` to enter the `pkg>` mode, and then install relate
 ```julia
 pkg> add TreeWidthSolver
 ```
-Then by `using TreeWidthSolver`, the package is loaded, and `Graphs.jl` is re-exported for convenience.
+Then by `using TreeWidthSolver`, the package is loaded.
 
 ### Examples
 
