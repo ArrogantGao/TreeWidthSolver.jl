@@ -1,4 +1,4 @@
-using TreeWidthSolver
+using TreeWidthSolver, Graphs
 using Test
 
 @testset "TreeWidthSolver.jl" begin

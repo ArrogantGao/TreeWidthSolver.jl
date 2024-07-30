@@ -1,8 +1,6 @@
 module TreeWidthSolver
 
-using SparseArrays, AbstractTrees, Bijections, Combinatorics
-using Reexport
-@reexport using Graphs
+using SparseArrays, AbstractTrees, Bijections, Combinatorics, Graphs
 
 export line_graph, simple_graph, adjacency_mat, graph_from_tuples
 export LabeledSimpleGraph

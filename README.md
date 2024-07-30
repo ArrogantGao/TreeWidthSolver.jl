@@ -28,7 +28,7 @@ Currently, this package provides the following functions:
 Here is an example:
 
 ```julia
-julia> using TreeWidthSolver
+julia> using TreeWidthSolver, Graphs
 
 julia> g = random_regular_graph(6, 3)
 {6, 9} undirected simple Int64 graph
