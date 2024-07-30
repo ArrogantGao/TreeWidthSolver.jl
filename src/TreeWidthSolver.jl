@@ -10,7 +10,7 @@ export is_pmc, all_pmc, all_pmc_naive
 export BTDP_exact_tw, TreeDecomposition, is_treedecomposition
 export exact_treewidth
 
-export DecompositionTreeNode, treewidth, EliminationOrder
+export DecompositionTreeNode, treewidth, EliminationOrder, decomposition_tree
 
 # the data structure
 include("types.jl")

@@ -40,28 +40,30 @@ LabeledSimpleGraph{Int64, Int64, Int64}, nv: 6, ne: 9
 julia> all_min_sep(lg)
 Set{Set{Int64}} with 6 elements:
   Set([5, 4, 2])
-  Set([6, 2, 1])
+  Set([5, 6, 2])
   Set([6, 3, 1])
-  Set([4, 2, 1])
-  Set([5, 4, 3])
-  Set([5, 6, 3])
+  Set([5, 6, 1])
+  Set([4, 2, 3])
+  Set([4, 3, 1])
 
 julia> all_pmc(lg)
 Set{Set{Int64}} with 12 elements:
   Set([5, 6, 3, 1])
   Set([4, 2, 3, 1])
   Set([4, 6, 3, 1])
-  Set([5, 4, 6, 3])
   Set([5, 4, 2, 3])
+  Set([5, 4, 6, 1])
   Set([5, 4, 6, 2])
+  Set([6, 2, 3, 1])
+  Set([5, 6, 2, 1])
   ⋮ 
 
 julia> td = exact_treewidth(lg)
 tree width: 3
 tree decomposition:
 Set([5, 6, 3, 1])
-└─ Set([4, 6, 3, 1])
-   └─ Set([4, 2, 3, 1])
+├─ Set([5, 4, 6, 1])
+└─ Set([6, 2, 3, 1])
 ```
 It is shown that for the given graph the minimal treewidth is $3$, and the corresponding tree decomposition is shown, where each set represents a tree bag.
 
@@ -71,14 +73,26 @@ The solver can also solve the weighted treewidth problem, where the weight of ea
 julia> weights = [i for i in 1:6];
 
 julia> lg = LabeledSimpleGraph(g, weights = weights)
-LabeledSimpleGraph{Int64, Char, Int64}, nv: 6, ne: 6
+LabeledSimpleGraph{Int64, Int64, Int64}, nv: 6, ne: 9
 
 julia> td = exact_treewidth(lg)
 tree width: 13
 tree decomposition:
-Set([4, 2, 3, 1])
-└─ Set([4, 6, 2, 1])
-   └─ Set([5, 6, 2, 1])
+Set([4, 6, 3, 1])
+├─ Set([5, 4, 3, 1])
+└─ Set([6, 2, 3, 1])
+```
+
+This package also provide functions to convert the tree decomposition as a vertex elimination ordering and vice versa. Here is an example:
+
+```julia
+julia> order = EliminationOrder(td.tree)
+EliminationOrder{Int64}([1, 3, 6, 4, 2, 5])
+
+julia> tree_recover = decomposition_tree(order, lg)
+Set([5, 4, 3, 1])
+└─ Set([4, 6, 3, 1])
+   └─ Set([6, 2, 3, 1])
 ```
 
 ## Questions and Contributions

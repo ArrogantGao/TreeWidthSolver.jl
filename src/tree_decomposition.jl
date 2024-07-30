@@ -82,7 +82,7 @@ function _tree_bags(order::EliminationOrder{TL}, graph::LabeledSimpleGraph{TG, T
     T = SimpleGraph() # tree
     orphan_bags = Int[] # Array to hold parentless vertices of T
 
-    for i in 1:length(order.order)
+    for i in length(order.order):-1:1
         u = order.order[i]
 
         # Eliminate u from G: form a clique and remove u,
