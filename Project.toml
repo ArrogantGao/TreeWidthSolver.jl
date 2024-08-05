@@ -1,7 +1,7 @@
 name = "TreeWidthSolver"
 uuid = "7d267fc5-9ace-409f-a54c-cd2374872a55"
-authors = ["Xuanzhao Gao <gaoxuanzhao@gmail.com> and contributors"]
-version = "0.1.0"
+authors = ["Xuanzhao Gao"]
+version = "0.2.0"
 
 [deps]
 AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
@@ -11,7 +11,7 @@ Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [compat]
-AbstractTrees = "0.4.5"
+AbstractTrees = "0.4"
 Bijections = "0.1.7"
 Combinatorics = "1.0.2"
 Graphs = "1.11.2"

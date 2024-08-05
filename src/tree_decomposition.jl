@@ -42,27 +42,24 @@ function treewidth(tree::DecompositionTreeNode)
 end
 
 struct EliminationOrder{T}
-    order::Vector{T} # elimination order of vertices, the first element is the first one to be eliminated
+    order::Vector{Vector{T}} # elimination order of vertices, the first element is the first one to be eliminated. The vertices in the same vector are eliminated at the same time.
 end
 
 # Generate an elimination order from a tree decomposition
 EliminationOrder(tree::DecompositionTreeNode{T}) where{T} = _elimination_order(tree)
-function EliminationOrder(tree::DecompositionTreeNode{T}, graph::LabeledSimpleGraph{TL, TG}) where{T, TL, TG}
-    order_native = _elimination_order(tree)
-    order = [graph.labels[v] for v in order_native.order]
-    return EliminationOrder(order)
-end
 
 function _elimination_order(tree::DecompositionTreeNode{T}) where{T}
-    order = Vector{T}()
+    order = Vector{Vector{T}}()
 
     for node in PostOrderDFS(tree)
         parent = node.parent
+        temp = Vector{T}()
         for v in node.bag
             if (isnothing(parent) || (!isnothing(parent) && !(v in parent.bag)))
-                pushfirst!(order, v)
+                pushfirst!(temp, v)
             end
         end
+        !isempty(temp) && pushfirst!(order, temp)
     end
 
     return EliminationOrder(order)
@@ -82,8 +79,10 @@ function _tree_bags(order::EliminationOrder{TL}, graph::LabeledSimpleGraph{TG, T
     T = SimpleGraph() # tree
     orphan_bags = Int[] # Array to hold parentless vertices of T
 
-    for i in length(order.order):-1:1
-        u = order.order[i]
+    order_vec = vcat(order.order...)
+
+    for i in length(order_vec):-1:1
+        u = order_vec[i]
 
         # Eliminate u from G: form a clique and remove u,
         # Take the clique formed by eliminating u as the next possible bag
