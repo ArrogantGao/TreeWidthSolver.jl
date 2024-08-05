@@ -34,8 +34,8 @@ function is_treedecomposition(G::LabeledSimpleGraph{TG, TL, TW}, td::TreeDecompo
     end
 
     # all treebags containing the same vertex form a connected subtree
-    eo = EliminationOrder(td.tree)
-    if (length(eo.order) != nv(G)) || (unique(eo.order) != eo.order)
+    eo = vcat(EliminationOrder(td.tree).order...)
+    if (length(eo) != nv(G)) || (unique(eo) != eo)
         return false
     end
 
