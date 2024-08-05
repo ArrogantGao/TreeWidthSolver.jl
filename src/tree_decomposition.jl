@@ -53,13 +53,13 @@ function _elimination_order(tree::DecompositionTreeNode{T}) where{T}
 
     for node in PostOrderDFS(tree)
         parent = node.parent
+        temp = Vector{T}()
         for v in node.bag
-            temp = Vector{T}()
             if (isnothing(parent) || (!isnothing(parent) && !(v in parent.bag)))
                 pushfirst!(temp, v)
             end
-            !isempty(temp) && pushfirst!(order, temp)
         end
+        !isempty(temp) && pushfirst!(order, temp)
     end
 
     return EliminationOrder(order)
