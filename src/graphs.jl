@@ -1,11 +1,3 @@
-function graph_from_tuples(n::Int, edgs)
-    g = SimpleGraph(n)
-    for (i, j) in edgs
-        add_edge!(g, i, j)
-    end
-    g
-end
-
 # contruct line graph from a sparse adjoint martix
 # cols represents the vertices, rows represent the edges, true for connected
 function line_graph(adjacency_mat::SparseMatrixCSC; labels::Vector{TL}=[1:size(adjacency_mat, 2)...]) where{TL}

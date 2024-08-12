@@ -7,3 +7,5 @@
 .vscode
 Manifest.toml
 build
+example
+statprof
