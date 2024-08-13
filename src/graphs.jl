@@ -1,6 +1,76 @@
-# contruct line graph from a sparse adjoint martix
-# cols represents the vertices, rows represent the edges, true for connected
-function line_graph(adjacency_mat::SparseMatrixCSC; labels::Vector{TL}=[1:size(adjacency_mat, 2)...]) where{TL}
+function graph_from_tuples(n::Int, edgs)
+    g = SimpleGraph(n)
+    for (i, j) in edgs
+        add_edge!(g, i, j)
+    end
+    g
+end
+
+"""
+    graph_from_gr(filename)
+
+Reads a graph from a file in the .gr format (PACE format) and returns a `SimpleGraph` object.
+
+# Arguments
+- `filename`: The path to the input file.
+
+# Returns
+- `graph`: A `SimpleGraph` object representing the graph.
+
+"""
+function graph_from_gr(filename)
+    open(filename, "r") do file
+        line = readline(file)
+        first_str, second_str, first_num, second_num = split(line)
+        n = parse(Int64, first_num)
+        graph = SimpleGraph(n)
+
+        for line in eachline(file)
+            v1, v2 = split(line)
+            add_edge!(graph, parse(Int64, v1), parse(Int64, v2))
+        end
+        return graph
+    end
+end
+
+"""
+    function save_graph(g::SimpleGraph, filename)
+
+The graph will be saved as .gr format, in PACE format, where the first line is `p tw nv ne`, and the following lines are the edges `src dst`
+"""
+function save_graph(g::SimpleGraph, filename)
+    open(filename, "w") do file
+        println(file, "p tw $(nv(g)) $(ne(g))")
+        for e in edges(g)
+            println(file, "$(src(e)) $(dst(e))")
+        end
+    end
+    nothing
+end
+    
+function adjacency_mat(graph::SimpleGraph)
+    rows = Int[]
+    cols = Int[]
+    for (i,edge) in enumerate(edges(graph))
+        push!(rows, edge.src, edge.dst)
+        push!(cols, i, i)
+    end
+    return sparse(rows, cols, ones(Int, length(rows)))
+end
+
+"""
+    line_graph(adjacency_mat::SparseMatrixCSC)
+
+Constructs the line graph of a given graph represented by its adjacency matrix.
+
+# Arguments
+- `adjacency_mat::SparseMatrixCSC`: The adjacency matrix of the input graph, where the columns represent the vertices and the rows represent the edges. The value is `true` if the edge is connected to the vertex.
+
+# Returns
+- `g::SimpleGraph`: The line graph of the input graph.
+
+"""
+function line_graph(adjacency_mat::SparseMatrixCSC)
     nv = size(adjacency_mat, 1)
     ne = size(adjacency_mat, 2)
 
@@ -14,14 +84,25 @@ function line_graph(adjacency_mat::SparseMatrixCSC; labels::Vector{TL}=[1:size(a
         end
     end
 
-    return LabeledSimpleGraph(g, labels)
+    return g
+end
+function line_graph(g::SimpleGraph)
+    return line_graph(adjacency_mat(g))
 end
 
-function line_graph(g::SimpleGraph, labels::Vector = [1:ne(g)...])
-    return line_graph(adjacency_mat(g), labels=labels)
-end
 
-# contruct a simple graph from the adjoint martix
+"""
+    simple_graph(adjacency_mat::SparseMatrixCSC)
+
+Constructs a simple undirected graph from a sparse adjacency matrix.
+
+# Arguments
+- `adjacency_mat::SparseMatrixCSC`: The sparse adjacency matrix representing the graph.
+
+# Returns
+- `g::SimpleGraph`: The constructed simple undirected graph.
+
+"""
 function simple_graph(adjacency_mat::SparseMatrixCSC)
     ne = size(adjacency_mat, 2)
     nv = size(adjacency_mat, 1)
@@ -36,133 +117,5 @@ function simple_graph(adjacency_mat::SparseMatrixCSC)
         end
     end
 
-    return g
-end
-
-# the graphs operations defined on labeled graphs
-
-Graphs.nv(g::LabeledSimpleGraph) = nv(g.graph)
-Graphs.vertices(g::LabeledSimpleGraph) = [g.v2l[i] for i in vertices(g.graph)]
-Graphs.ne(g::LabeledSimpleGraph) = ne(g.graph)
-Graphs.edges(g::LabeledSimpleGraph) = [(g.v2l[src(i)], g.v2l[dst(i)]) for i in edges(g.graph)]
-Graphs.neighbors(g::LabeledSimpleGraph{TG, TL, TW}, v::TL) where{TG, TL, TW} = [g.v2l[n] for n in neighbors(g.graph, g.l2v[v])]
-Graphs.has_edge(g::LabeledSimpleGraph{TG, TL, TW}, src::TL, dst::TL) where{TG, TL, TW} = has_edge(g.graph, g.l2v[src], g.l2v[dst])
-
-function Graphs.add_edge!(g::LabeledSimpleGraph{TG, TL, TW}, src::TL, dst::TL) where{TG, TL, TW}
-    add_edge!(g.graph, g.l2v[src], g.l2v[dst])
-    return g
-end
-
-function Graphs.add_vertex!(g::LabeledSimpleGraph{TG, TL, TW}, label::TL) where{TG, TL, TW}
-    add_vertex!(g.graph)
-    g.l2v[label] = nv(g.graph)
-    return g
-end
-
-function is_clique(g::LabeledSimpleGraph{TG, TL, TW}) where{TG, TL, TW}
-    vs = vertices(g)
-    for i in vs, j in vs
-        if i != j && !has_edge(g, i, j) return false end
-    end
-    return true
-end
-
-
-function is_clique(g::LabeledSimpleGraph{TG, TL, TW}, S::Union{Set{TL}, Vector{TL}}) where{TG, TL, TW}
-    for i in S, j in S
-        if i != j && !has_edge(g, i, j) return false end
-    end
-    return true
-end
-
-function Graphs.induced_subgraph(g::LabeledSimpleGraph{TG, TL, TW}, vertices::Vector{TL}) where{TG, TL, TW}
-    
-    g_new, vertices_old = induced_subgraph(g.graph, [g.l2v[v] for v in vertices])
-    labels = [g.v2l[v] for v in vertices_old]
-    weights = [g.l2w[l] for l in labels]
-
-    return LabeledSimpleGraph(g_new, labels, weights)
-end
-
-function closed_neighbors(g::LabeledSimpleGraph{TG, TL, TW}, S::Union{Set{TL}, Vector{TL}}) where{TG, TL, TW}
-    neibs = Set{TL}(S)
-    for v in S, n in neighbors(g, v)
-        push!(neibs, n)
-    end
-    return neibs
-end
-
-function open_neighbors(g::LabeledSimpleGraph{TG, TL, TW}, S::Union{Set{TL}, Vector{TL}}) where{TG, TL, TW}
-    c_neibs = closed_neighbors(g, S)
-    return setdiff(c_neibs, S)
-end
-
-function components(g::LabeledSimpleGraph{TG, TL, TW}, S::Union{Set{TL}, Vector{TL}}) where{TG, TL, TW}
-    # remove S from graph
-    g_new = induced_subgraph(g, collect(setdiff(Set(vertices(g)), S)))
-    ccs = connected_components(g_new.graph)
-    return Set([Set([g_new.v2l[v] for v in cc]) for cc in ccs])
-end
-
-function is_full_component(g::LabeledSimpleGraph{TG, TL, TW}, S::Union{Set{TL}, Vector{TL}}, C::Union{Set{TL}, Vector{TL}}) where{TG, TL, TW}
-    nc = open_neighbors(g, C)
-    return Set(S) == Set(nc)
-end
-
-function full_components(g::LabeledSimpleGraph{TG, TL, TW}, S::Set{TL}) where{TG, TL, TW}
-    cs = components(g, S)
-    fcs = Vector{Set{TL}}()
-    for C in cs
-        if is_full_component(g, S, C)
-            push!(fcs, C)
-        end
-    end
-    return Set(fcs)
-end
-
-function nebi_components(g::LabeledSimpleGraph{TG, TL, TW}, S::Set{TL}) where{TG, TL, TW}
-    cs = components(g, S)
-    nebi_cs = Set{TL}()
-    for c in cs
-        nebi_c = open_neighbors(g, c)
-        for ni in nebi_c
-            @assert ni ∈ S
-            push!(nebi_cs, ni)
-        end
-    end
-    return nebi_cs
-end
-
-function complete!(g::LabeledSimpleGraph{TG, TL, TW}, S::Set{TL}) where{TG, TL, TW}
-    vec_S = collect(S)
-    for i in 1:length(vec_S) - 1
-        for j in i + 1:length(vec_S)
-            add_edge!(g, vec_S[i], vec_S[j])
-        end
-    end
-    return g
-end
-
-function eliminate(g::LabeledSimpleGraph{TG, TL, TW}, v::TL) where{TG, TL, TW}
-    vi = g.l2v[v]
-    new_graph = SimpleGraph(nv(g) - 1)
-    new_labels = [g.v2l[i] for i in 1:nv(g) if i != vi]
-    new_weights = [g.l2w[li] for li in new_labels]
-
-    for e in edges(g.graph)
-        if src != vi && e.dst != vi
-            add_edge!(new_graph, e.src > vi ? e.src - 1 : e.src, e.dst > vi ? e.dst - 1 : e.dst)
-        end
-    end
-
-    neibs = neighbors(g.graph, vi)
-
-    for i in 1:length(neibs) - 1
-        for j in i + 1:length(neibs)
-            add_edge!(new_graph, neibs[i] > vi ? neibs[i] - 1 : neibs[i], neibs[j] > vi ? neibs[j] - 1 : neibs[j])
-        end
-    end
-
-    g = LabeledSimpleGraph(new_graph, new_labels, new_weights)
     return g
 end

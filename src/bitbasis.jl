@@ -1,20 +1,6 @@
-using BitBasis
-export bit2id
-
 Base.show(io::IO, val::LongLongUInt{C}) where{C} = print(io, BitStr{64 * C}(val))
 
-function Base.isless(val1::LongLongUInt{C}, val2::LongLongUInt{C}) where{C}
-    for i in 1:C
-        if val1.content[i] < val2.content[i]
-            return true
-        elseif val1.content[i] > val2.content[i]
-            return false
-        end
-    end
-    return false
-end
-
-function bit2id(bit::LongLongUInt{C}; N::Int = 64 * C) where{C}
+function bit2id(bit::INT, N::Int) where{INT}
     id = Vector{Int}()
     for i in 1:N
         if readbit(bit, i) == 1
@@ -22,4 +8,12 @@ function bit2id(bit::LongLongUInt{C}; N::Int = 64 * C) where{C}
         end
     end
     return id
+end
+
+function Base.hash(bits_tuple::NTuple{N, LongLongUInt{C}}) where{N, C}
+    hash0 = Base.hash(bits_tuple[1].content)
+    for i in 2:N
+        hash0 = Base.hash(bits_tuple[i].content, hash0)
+    end
+    return hash0
 end

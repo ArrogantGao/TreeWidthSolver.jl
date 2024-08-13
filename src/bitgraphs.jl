@@ -1,28 +1,3 @@
-using BitBasis, Graphs
-
-function graph_from_tuples(n::Int, edgs)
-    g = SimpleGraph(n)
-    for (i, j) in edgs
-        add_edge!(g, i, j)
-    end
-    g
-end
-
-function graph_from_gr(filename)
-    open(filename, "r") do file
-        line = readline(file)
-        first_str, second_str, first_num, second_num = split(line)
-        n = parse(Int64, first_num)
-        graph = SimpleGraph(n)
-
-        for line in eachline(file)
-            v1, v2 = split(line)
-            add_edge!(graph, parse(Int64, v1), parse(Int64, v2))
-        end
-        return graph
-    end
-end
-    
 mutable struct BitGraph{INT}
     N::Int # size of the graph
     bitgraph::Vector{INT} # store the adjacency matrix as vector of BitStr
@@ -32,8 +7,7 @@ end
 
 function BitGraph(g::SimpleGraph)
     N = nv(g)
-    C = N ÷ 64 + 1
-    INT = LongLongUInt{C}
+    INT = LongLongUInt{N ÷ 64 + 1}
     bitgraph = [bmask(INT, g.fadjlist[i]) for i in 1:N]
     mask = bmask(INT, 1:N)
     return BitGraph(N, bitgraph, deepcopy(g.fadjlist), mask)
@@ -45,8 +19,6 @@ end
 
 Base.show(io::IO, bg::BitGraph{INT}) where {INT} = print(io, "BitGraph{$INT}, N: $(bg.N), nv: $(nv(bg)), mask: $(BitStr{bg.N}(bg.mask))")
 Base.copy(bg::BitGraph{INT}) where{INT} = BitGraph(bg.N, copy(bg.bitgraph), deepcopy(bg.fadjlist), bg.mask)
-
-# needed graph operations: neighbors, induced_subgraph, connected_components, 
 
 function Graphs.neighbors(bg::BitGraph{INT}, v::Int) where{INT}
     return bg.bitgraph[v] & bg.mask
@@ -70,7 +42,7 @@ function open_neighbors(bg::BitGraph{INT}, vs::INT) where{INT}
     return (nebis & bg.mask) & ~vs
 end
 
-function is_connected(bg::BitGraph{INT}, v::Int, u::Int) where{INT}
+function Graphs.is_connected(bg::BitGraph{INT}, v::Int, u::Int) where{INT}
     @assert (readbit(bg.mask, v) == 1) && (readbit(bg.mask, u) == 1)
     return isone(readbit(bg.bitgraph[v], u))
 end
@@ -131,4 +103,15 @@ function is_clique(bg::BitGraph{INT}, S::INT) where{INT}
         flag &= (bg.bitgraph[i] | bmask(INT, i))
     end
     return (flag & S) == S
+end
+
+function full_components(bg::BitGraph{INT}, S::INT) where{INT}
+    comps = connected_components(bg, mask = ~S & bg.mask)
+    return [comp for comp in comps if is_full_component(bg, S, comp)]
+end
+
+function res_components(bg::BitGraph{INT}, C::INT, Ω::INT) where{INT}
+    mask = C & ~Ω
+    ccs = connected_components(bg, mask = mask)
+    return ccs
 end

@@ -21,7 +21,9 @@ function all_min_sep_naive(bg::BitGraph{INT}) where{INT}
     return Δ
 end
 
-function all_min_sep(bg::BitGraph{INT}) where{INT}
+function all_min_sep(bg::BitGraph{INT}, verbose::Bool) where{INT}
+    verbose && @info "computing all minimal separators"
+
     # initialization
     ΔT = Vector{INT}()
 
@@ -42,6 +44,9 @@ function all_min_sep(bg::BitGraph{INT}) where{INT}
 
     i = 1
     while i ≤ length(ΔT)
+
+        (verbose && (i%10000 == 0 || (i < 10000 && i%1000 ==0) || (i < 1000 && i%100==0) || (i<100 && i%10==0))) && @info "allminseps: $i, $(length(ΔT))"
+
         S = ΔT[i]
         RS = Vector{INT}()
         for x in 1:bg.N
@@ -59,6 +64,8 @@ function all_min_sep(bg::BitGraph{INT}) where{INT}
         end
         i += 1
     end
+
+    verbose && @info "all minimal separators computed, total: $(length(ΔT))"
 
     return ΔT
 end

@@ -1,5 +1,6 @@
 # listing all potential maximal cliques in a graph
 # following the method provided in BouchitteÃ, Vincent, and Ioan Todinca. “Listing All Potential Maximal Cliques of a Graph.” Theoretical Computer Science, 2002.
+# Tuukka Korhonen, "Finding Optimal Tree Decompositions", 2020. https://tuukkakorhonen.com/papers/msc-thesis.pdf
 
 function has_full_component(bg::BitGraph{INT}, S::INT, comps::Vector{INT}) where{INT}
     for comp in comps
@@ -11,20 +12,24 @@ function has_full_component(bg::BitGraph{INT}, S::INT, comps::Vector{INT}) where
 end
 
 function is_cliquish(bg::BitGraph{INT}, S::INT, comps::Vector{INT}) where{INT}
-    vs = bit2id(S, N = bg.N)
     new_bitgraph = copy(bg.bitgraph)
-    for v in vs
-        new_bitgraph[v] |= bmask(INT, v)
+    for i in 1:bg.N
+        iszero(readbit(S, i)) && continue
+        new_bitgraph[i] |= bmask(INT, i)
     end
 
     for comp in comps
         ons = open_neighbors(bg, comp)
-        vons = bit2id(ons, N = bg.N)
-        for i in vons
+        for i in 1:bg.N
+            iszero(readbit(ons, i)) && continue
             new_bitgraph[i] |= ons
         end
     end
-    new_S = reduce((x, y) -> x & y, new_bitgraph[vs], init = S)
+    new_S = S
+    for i in 1:bg.N
+        iszero(readbit(S, i)) && continue
+        new_S &= new_bitgraph[i]
+    end
     return (new_S == S)
 end
 
@@ -58,6 +63,8 @@ function vertex_order!(bg::BitGraph{INT}, vo::Vector{Int}) where{INT}
     return vo
 end
 
+
+# the extend_Π! and all_pmc_enmu are the method from the paper: Tuukka Korhonen, "Finding Optimal Tree Decompositions", 2020. https://tuukkakorhonen.com/papers/msc-thesis.pdf
 function extend_Π!(Π::Vector{INT}, Πi::Vector{INT}, vo::Vector{Int}, bg::BitGraph{INT}) where{INT}
     cbg = copy(bg)
     for Ω in Πi
@@ -72,14 +79,18 @@ function extend_Π!(Π::Vector{INT}, Πi::Vector{INT}, vo::Vector{Int}, bg::BitG
     return Π
 end
 
-function all_pmc_enmu(bg::BitGraph{INT}; vo::Vector{Int} = vertex_order!(bg, Int[1])) where{INT}
-    Δ = all_min_sep(bg)
-    # @show bit2id.(Δ)
-    # @show vo
+function all_pmc_enmu(bg::BitGraph{INT}, verbose::Bool) where{INT}
+    Δ = all_min_sep(bg, verbose)
     Π = Vector{INT}()
 
+    vo = vertex_order!(bg, Int[1])
+
+    verbose && @info "computing all potential maximal cliques"
     bg0 = copy(bg)
     for i in 1:bg.N - 1
+
+        verbose && @info "vertices: $(bg.N - i), Δ: $(length(Δ)), Π: $(length(Π))"
+
         Πi = Vector{INT}()
         a = vo[i]
         bmask_a = bmask(INT, a)
@@ -96,8 +107,6 @@ function all_pmc_enmu(bg::BitGraph{INT}; vo::Vector{Int} = vertex_order!(bg, Int
             end
         end
 
-        # println("vertices: $(bg.N - i), ΔT: $(length(ΔT)), ΔN: $(length(ΔN)), ΔS: $(length(ΔS))")
-
         for S in ΔN ∪ ΔS
             is_pmc(bg0, S | bmask_a) && push!(Πi, S | bmask_a)
         end
@@ -113,13 +122,17 @@ function all_pmc_enmu(bg::BitGraph{INT}; vo::Vector{Int} = vertex_order!(bg, Int
         bg0.mask = bg.mask & ~bmask(INT, vo[1:i])
     end
     extend_Π!(Π, [bmask(INT, vo[end])], vo[end-1:-1:1], bg)
-    return unique!(Π)
+    unique!(Π)
+
+    verbose && @info "computing all potential maximal cliques done, total: $(length(Π))"
+
+    return Π
 end
 
-# the original version by bt
+# one_more_vertex and all_pmc_bt are from the original version: BouchitteÃ, Vincent, and Ioan Todinca. “Listing All Potential Maximal Cliques of a Graph.” Theoretical Computer Science, 2002.
 function one_more_vertex(G_1::BitGraph{INT}, G_0::BitGraph{INT}, Π_0::Vector{INT}, Δ_1::Vector{INT}, Δ_0::Vector{INT}) where{INT}
     bmask_a = G_1.mask & ~G_0.mask
-    a = bit2id(bmask_a, N = bg.N)[1]
+    a = bit2id(bmask_a, G_1.N)[1]
 
     Π_1 = Vector{INT}()
     SΔ_0 = Set(Δ_0)
@@ -162,7 +175,7 @@ function all_pmc_bt(bg::BitGraph{INT}) where{INT}
 
     for i in 2:bg.N
         G1 = induced_subgraph(bg, bmask(INT, vo[1:i]))
-        Δ_G1 = all_min_sep(G1)
+        Δ_G1 = all_min_sep(G1, false)
         Π_G1 = one_more_vertex(G1, G0, Π_G1, Δ_G1, Δ_G0)
         Δ_G0 = Δ_G1
         G0 = G1

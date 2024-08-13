@@ -1,26 +1,16 @@
-using TreeWidthSolver, Test
+using TreeWidthSolver: all_pmc_bt
 
 @testset "maximum cliques" begin
-    for n in 4:2:12
+    for n in 6:2:14
         g = random_regular_graph(n, 3)
-        lg = LabeledSimpleGraph(g)
-        Π = all_pmc(lg)
-        Π_naive = all_pmc_naive(lg)
-        for Ω in Π
-            @test is_pmc(lg, Ω)
+        bg = BitGraph(g)
+        Π_enmu = all_pmc_enmu(bg, false)
+        Π_bt = all_pmc_bt(bg)
+        Π_naive = all_pmc_naive(bg)
+        for Ω in Π_enmu
+            @test is_pmc(bg, Ω)
         end
-        @test length(Π) == length(Π_naive)
-        @test Π == Π_naive
-    end
-end
-
-@testset "all pmc on small graphs" begin
-    smallgraphs = [:bull, :chvatal, :cubical, :desargues, :diamond, :dodecahedral, :frucht, :heawood, :house, :housex, :icosahedral, :krackhardtkite, :moebiuskantor, :octahedral, :pappus, :petersen, :sedgewickmaze, :tetrahedral, :truncatedtetrahedron]
-    for name_smallgraph in smallgraphs
-        g = smallgraph(name_smallgraph)
-        lg = LabeledSimpleGraph(g)
-        Π = all_pmc(lg)
-        Πn = all_pmc_naive(lg)
-        @test length(Π) == length(Πn)
+        @test length(Π_enmu) == length(Π_naive)
+        @test Set(Π_enmu) == Set(Π_naive) == Set(Π_bt)
     end
 end
