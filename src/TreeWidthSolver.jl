@@ -2,7 +2,7 @@ module TreeWidthSolver
 
 using SparseArrays, AbstractTrees, Combinatorics, Graphs, BitBasis
 
-export BitGraph
+export MaskedBitGraph
 
 # interface for graphs
 export line_graph, simple_graph, adjacency_mat

@@ -13,7 +13,7 @@ function clique_width(S::INT, weights::Vector{TW}) where {INT, TW}
 end
 
 # weights are the log2 dims of the indices
-function bt_algorithm(bg::BitGraph{INT}, Π::Vector{INT}, weights::Vector{TW}, verbose::Bool) where{INT, TW}
+function bt_algorithm(bg::MaskedBitGraph{INT}, Π::Vector{INT}, weights::Vector{TW}, verbose::Bool) where{INT, TW}
 
     verbose && @info "computing the exact treewidth using the Bouchitté-Todinca algorithm"
     verbose && @info "precomputation phase"
@@ -69,20 +69,20 @@ function bt_algorithm(bg::BitGraph{INT}, Π::Vector{INT}, weights::Vector{TW}, v
     return TreeDecomposition(tw, tree)
 end
 
-function construct_tree(bg::BitGraph{INT}, optChoice::Dict{Tuple{INT, INT}, INT}) where{INT}
+function construct_tree(bg::MaskedBitGraph{INT}, optChoice::Dict{Tuple{INT, INT}, INT}) where{INT}
     Ω0 = optChoice[(bmask(INT, 0), bg.mask)]
-    root_node = DecompositionTreeNode(bit2id(Ω0, bg.N))
+    root_node = DecompositionTreeNode(bit2id(Ω0, N(bg)))
     _construct_tree!(root_node, Ω0, optChoice, bg, bg.mask)
     return root_node
 end
 
-function _construct_tree!(node::DecompositionTreeNode{Int}, bag::INT, optChoice::Dict{Tuple{INT, INT}, INT}, bg::BitGraph{INT}, C::INT) where{INT}
+function _construct_tree!(node::DecompositionTreeNode{Int}, bag::INT, optChoice::Dict{Tuple{INT, INT}, INT}, bg::MaskedBitGraph{INT}, C::INT) where{INT}
     Ω = bag
     CS2 = res_components(bg, C, Ω)
     for C2 in CS2
         S2 = open_neighbors(bg, C2)
         Ω2 = optChoice[(S2, C2)]
-        add_child!(node, bit2id(Ω2, bg.N))
+        add_child!(node, bit2id(Ω2, N(bg)))
         _construct_tree!(node.children[end], Ω2, optChoice, bg, C2)
     end
     return nothing

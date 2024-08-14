@@ -1,7 +1,7 @@
 # generating all minimum separators of a given simple graph
 # following the method provided in Berry, Anne, Jean-Paul Bordat, and Olivier Cogis. “Generating All the Minimal Separators of a Graph.” In Graph-Theoretic Concepts in Computer Science, edited by Peter Widmayer, Gabriele Neyer, and Stephan Eidenbenz, 1665:167–72. Lecture Notes in Computer Science. Berlin, Heidelberg: Springer Berlin Heidelberg, 1999. https://doi.org/10.1007/3-540-46784-X_17.
 
-function is_min_sep(bg::BitGraph{INT}, S::INT; mask::INT = bg.mask) where{INT}
+function is_min_sep(bg::MaskedBitGraph{INT}, S::INT; mask::INT = bg.mask) where{INT}
     flag = 0
     comps = connected_components(bg, mask = (mask & ~S))
     for comp in comps
@@ -12,24 +12,24 @@ function is_min_sep(bg::BitGraph{INT}, S::INT; mask::INT = bg.mask) where{INT}
     return flag ≥ 2
 end
 
-function all_min_sep_naive(bg::BitGraph{INT}) where{INT}
+function all_min_sep_naive(bg::MaskedBitGraph{INT}) where{INT}
     Δ = Vector{INT}()
-    for sets in combinations(1:bg.N)
+    for sets in combinations(1:N(bg))
         S = bmask(INT, sets)
         is_min_sep(bg, S) && push!(Δ, S)
     end
     return Δ
 end
 
-function all_min_sep(bg::BitGraph{INT}, verbose::Bool) where{INT}
+function all_min_sep(bg::MaskedBitGraph{INT}, verbose::Bool) where{INT}
     verbose && @info "computing all minimal separators"
 
     # initialization
     ΔT = Vector{INT}()
 
-    for v in 1:bg.N
+    for v in 1:N(bg)
         (readbit(bg.mask, v) == 0) && continue
-        close_neibs = neighbors(bg, v) | bmask(INT, v)
+        close_neibs = bit_neighbors(bg, v) | bmask(INT, v)
         for comp in connected_components(bg, mask = ~close_neibs)
             ons = open_neighbors(bg, comp)
             if (ons != 0) && (ons ∉ ΔT)
@@ -49,9 +49,9 @@ function all_min_sep(bg::BitGraph{INT}, verbose::Bool) where{INT}
 
         S = ΔT[i]
         RS = Vector{INT}()
-        for x in 1:bg.N
+        for x in 1:N(bg)
             iszero(readbit(S, x)) && continue
-            for comp in connected_components(bg, mask = ~(S | neighbors(bg, x)))
+            for comp in connected_components(bg, mask = ~(S | bit_neighbors(bg, x)))
                 push!(RS, open_neighbors(bg, comp))
             end
         end

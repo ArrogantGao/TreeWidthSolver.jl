@@ -13,7 +13,7 @@ Compute the exact treewidth of a given graph `g` using the BT algorithm.
 
 """
 function exact_treewidth(g::SimpleGraph{TG}; weights::Vector{TW} = ones(nv(g)), verbose::Bool = false) where {TG, TW}
-    bg = BitGraph(g)
+    bg = MaskedBitGraph(g)
     Π = all_pmc_enmu(bg, verbose)
     td = bt_algorithm(bg, Π, weights, verbose)
     return td.tw
@@ -35,7 +35,7 @@ Compute the elimination order of a graph `g` using the BT algorithm.
 
 """
 function elimination_order(g::SimpleGraph{TG}; labels::Vector{TL} = collect(1:nv(g)), weights::Vector{TW} = ones(nv(g)), verbose::Bool = false) where {TG, TL, TW}
-    bg = BitGraph(g)
+    bg = MaskedBitGraph(g)
     Π = all_pmc_enmu(bg, verbose)
     td = bt_algorithm(bg, Π, weights, verbose)
     eo = EliminationOrder(td.tree)

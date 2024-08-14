@@ -2,7 +2,7 @@
 # following the method provided in BouchitteÃ, Vincent, and Ioan Todinca. “Listing All Potential Maximal Cliques of a Graph.” Theoretical Computer Science, 2002.
 # Tuukka Korhonen, "Finding Optimal Tree Decompositions", 2020. https://tuukkakorhonen.com/papers/msc-thesis.pdf
 
-function has_full_component(bg::BitGraph{INT}, S::INT, comps::Vector{INT}) where{INT}
+function has_full_component(bg::MaskedBitGraph{INT}, S::INT, comps::Vector{INT}) where{INT}
     for comp in comps
         if is_full_component(bg, S, comp)
             return true
@@ -11,29 +11,29 @@ function has_full_component(bg::BitGraph{INT}, S::INT, comps::Vector{INT}) where
     return false
 end
 
-function is_cliquish(bg::BitGraph{INT}, S::INT, comps::Vector{INT}) where{INT}
-    new_bitgraph = copy(bg.bitgraph)
-    for i in 1:bg.N
+function is_cliquish(bg::MaskedBitGraph{INT}, S::INT, comps::Vector{INT}) where{INT}
+    new_MaskedBitGraph = copy(bg.bitgraph)
+    for i in 1:N(bg)
         iszero(readbit(S, i)) && continue
-        new_bitgraph[i] |= bmask(INT, i)
+        new_MaskedBitGraph[i] |= bmask(INT, i)
     end
 
     for comp in comps
         ons = open_neighbors(bg, comp)
-        for i in 1:bg.N
+        for i in 1:N(bg)
             iszero(readbit(ons, i)) && continue
-            new_bitgraph[i] |= ons
+            new_MaskedBitGraph[i] |= ons
         end
     end
     new_S = S
-    for i in 1:bg.N
+    for i in 1:N(bg)
         iszero(readbit(S, i)) && continue
-        new_S &= new_bitgraph[i]
+        new_S &= new_MaskedBitGraph[i]
     end
     return (new_S == S)
 end
 
-function is_pmc(bg::BitGraph{INT}, S::INT) where{INT}
+function is_pmc(bg::MaskedBitGraph{INT}, S::INT) where{INT}
     comps = connected_components(bg, mask = (~S & bg.mask))
     if has_full_component(bg, S, comps)
         return false
@@ -42,18 +42,18 @@ function is_pmc(bg::BitGraph{INT}, S::INT) where{INT}
     end
 end
 
-function all_pmc_naive(bg::BitGraph{INT}) where{INT}
+function all_pmc_naive(bg::MaskedBitGraph{INT}) where{INT}
     Π = Vector{INT}()
-    for sets in combinations(1:bg.N)
+    for sets in combinations(1:N(bg))
         S = bmask(INT, sets)
         is_pmc(bg, S) && push!(Π, S)
     end
     return Π
 end
 
-function vertex_order!(bg::BitGraph{INT}, vo::Vector{Int}) where{INT}
+function vertex_order!(bg::MaskedBitGraph{INT}, vo::Vector{Int}) where{INT}
     nebis = open_neighbors(bg, bmask(INT, vo))
-    for nebi in 1:bg.N
+    for nebi in 1:N(bg)
         iszero(readbit(nebis, nebi)) && continue
         if nebi ∉ vo
             push!(vo, nebi)
@@ -65,7 +65,7 @@ end
 
 
 # the extend_Π! and all_pmc_enmu are the method from the paper: Tuukka Korhonen, "Finding Optimal Tree Decompositions", 2020. https://tuukkakorhonen.com/papers/msc-thesis.pdf
-function extend_Π!(Π::Vector{INT}, Πi::Vector{INT}, vo::Vector{Int}, bg::BitGraph{INT}) where{INT}
+function extend_Π!(Π::Vector{INT}, Πi::Vector{INT}, vo::Vector{Int}, bg::MaskedBitGraph{INT}) where{INT}
     cbg = copy(bg)
     for Ω in Πi
         for i in 1:length(vo)
@@ -79,7 +79,7 @@ function extend_Π!(Π::Vector{INT}, Πi::Vector{INT}, vo::Vector{Int}, bg::BitG
     return Π
 end
 
-function all_pmc_enmu(bg::BitGraph{INT}, verbose::Bool) where{INT}
+function all_pmc_enmu(bg::MaskedBitGraph{INT}, verbose::Bool) where{INT}
     Δ = all_min_sep(bg, verbose)
     Π = Vector{INT}()
 
@@ -87,9 +87,9 @@ function all_pmc_enmu(bg::BitGraph{INT}, verbose::Bool) where{INT}
 
     verbose && @info "computing all potential maximal cliques"
     bg0 = copy(bg)
-    for i in 1:bg.N - 1
+    for i in 1:N(bg) - 1
 
-        verbose && @info "vertices: $(bg.N - i), Δ: $(length(Δ)), Π: $(length(Π))"
+        verbose && @info "vertices: $(N(bg) - i), Δ: $(length(Δ)), Π: $(length(Π))"
 
         Πi = Vector{INT}()
         a = vo[i]
@@ -130,9 +130,9 @@ function all_pmc_enmu(bg::BitGraph{INT}, verbose::Bool) where{INT}
 end
 
 # one_more_vertex and all_pmc_bt are from the original version: BouchitteÃ, Vincent, and Ioan Todinca. “Listing All Potential Maximal Cliques of a Graph.” Theoretical Computer Science, 2002.
-function one_more_vertex(G_1::BitGraph{INT}, G_0::BitGraph{INT}, Π_0::Vector{INT}, Δ_1::Vector{INT}, Δ_0::Vector{INT}) where{INT}
+function one_more_vertex(G_1::MaskedBitGraph{INT}, G_0::MaskedBitGraph{INT}, Π_0::Vector{INT}, Δ_1::Vector{INT}, Δ_0::Vector{INT}) where{INT}
     bmask_a = G_1.mask & ~G_0.mask
-    a = bit2id(bmask_a, G_1.N)[1]
+    a = bit2id(bmask_a, N(G_1))[1]
 
     Π_1 = Vector{INT}()
     SΔ_0 = Set(Δ_0)
@@ -166,14 +166,14 @@ function one_more_vertex(G_1::BitGraph{INT}, G_0::BitGraph{INT}, Π_0::Vector{IN
     return Π_1
 end
 
-function all_pmc_bt(bg::BitGraph{INT}) where{INT}
+function all_pmc_bt(bg::MaskedBitGraph{INT}) where{INT}
     vo = vertex_order!(bg, Int[1]) # order to remove vertices from the graph, starting from 1, keep the graph connected
     G0 = induced_subgraph(bg, bmask(INT, vo[1:1]))
 
     Π_G1 = [bmask(INT, vo[1])]
     Δ_G0 = Vector{INT}()
 
-    for i in 2:bg.N
+    for i in 2:N(bg)
         G1 = induced_subgraph(bg, bmask(INT, vo[1:i]))
         Δ_G1 = all_min_sep(G1, false)
         Π_G1 = one_more_vertex(G1, G0, Π_G1, Δ_G1, Δ_G0)

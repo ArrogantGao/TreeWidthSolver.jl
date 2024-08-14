@@ -22,8 +22,8 @@
         tw = exact_treewidth(g)
         @test tw ≈ tws[i]
 
-        Π = all_pmc_enmu(BitGraph(g), false)
-        td = bt_algorithm(BitGraph(g), Π, ones(ne(g)), false)
+        Π = all_pmc_enmu(MaskedBitGraph(g), false)
+        td = bt_algorithm(MaskedBitGraph(g), Π, ones(ne(g)), false)
 
         @test td.tw == tw
         @test width(td.tree) == tw
