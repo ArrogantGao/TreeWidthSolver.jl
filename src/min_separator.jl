@@ -3,7 +3,7 @@
 
 function is_min_sep(bg::MaskedBitGraph{INT}, S::INT; mask::INT = bg.mask) where{INT}
     flag = 0
-    comps = connected_components(bg, mask = (mask & ~S))
+    comps = bit_connected_components(bg, mask = (mask & ~S))
     for comp in comps
         if is_full_component(bg, S, comp, mask = mask)
             flag += 1
@@ -30,7 +30,7 @@ function all_min_sep(bg::MaskedBitGraph{INT}, verbose::Bool) where{INT}
     for v in 1:N(bg)
         (readbit(bg.mask, v) == 0) && continue
         close_neibs = bit_neighbors(bg, v) | bmask(INT, v)
-        for comp in connected_components(bg, mask = ~close_neibs)
+        for comp in bit_connected_components(bg, mask = ~close_neibs)
             ons = open_neighbors(bg, comp)
             if (ons != 0) && (ons ∉ ΔT)
                 push!(ΔT, ons)
@@ -51,7 +51,7 @@ function all_min_sep(bg::MaskedBitGraph{INT}, verbose::Bool) where{INT}
         RS = Vector{INT}()
         for x in 1:N(bg)
             iszero(readbit(S, x)) && continue
-            for comp in connected_components(bg, mask = ~(S | bit_neighbors(bg, x)))
+            for comp in bit_connected_components(bg, mask = ~(S | bit_neighbors(bg, x)))
                 push!(RS, open_neighbors(bg, comp))
             end
         end

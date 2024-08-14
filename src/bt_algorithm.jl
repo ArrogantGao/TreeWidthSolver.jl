@@ -21,7 +21,7 @@ function bt_algorithm(bg::MaskedBitGraph{INT}, Π::Vector{INT}, weights::Vector{
     T = Vector{Tuple{INT, INT, INT}}()
     for Ω in Π
         push!(T, (Ω, zero(INT), bg.mask))
-        for D in connected_components(bg, mask = ~Ω & bg.mask)
+        for D in bit_connected_components(bg, mask = ~Ω & bg.mask)
             S = open_neighbors(bg, D)
             for C in full_components(bg, S)
                 if ((Ω | (S | C)) == (S | C)) && ((S | Ω) == Ω) && (S ≠ Ω)

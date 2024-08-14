@@ -73,7 +73,7 @@ function Graphs.add_edge!(bg::MaskedBitGraph{INT}, src::Int, dst::Int) where{INT
 end
 
 # consider induced subgraph with mask
-function Graphs.induced_subgraph(bg::MaskedBitGraph{INT}, vertices::INT) where{INT}
+function bit_induced_subgraph(bg::MaskedBitGraph{INT}, vertices::INT) where{INT}
     sub_bg = copy(bg)
     sub_bg.mask = sub_bg.mask & vertices
     return sub_bg
@@ -82,7 +82,7 @@ end
 # we actually need neighobors of connected components of the induced subgraph
 
 # mask is a parameter, to aviod creating new MaskedBitGraph when considering induced subgraph
-function Graphs.connected_components(bg::MaskedBitGraph{INT}; mask::INT = bg.mask) where{INT}
+function bit_connected_components(bg::MaskedBitGraph{INT}; mask::INT = bg.mask) where{INT}
     comps = Vector{INT}()
     labels = ~mask
 
@@ -91,20 +91,20 @@ function Graphs.connected_components(bg::MaskedBitGraph{INT}; mask::INT = bg.mas
         readbit(labels, i) != 0 && continue
         comp = bmask(INT, i)
         labels = labels | comp
-        comp, labels = _connected_components(bg, comp, labels, i)
+        comp, labels = _bit_connected_components(bg, comp, labels, i)
         push!(comps, comp & bg.mask)
     end
     return comps
 end
 
-function _connected_components(bg::MaskedBitGraph{INT}, comp::INT, labels::INT, i::Int) where{INT}
+function _bit_connected_components(bg::MaskedBitGraph{INT}, comp::INT, labels::INT, i::Int) where{INT}
     active_nebis = (bit_neighbors(bg, i) & ~labels)
     (active_nebis == 0) && return comp, labels
     comp = comp | active_nebis
     labels = labels | active_nebis
     for j in bg.fadjlist[i]
         (iszero(readbit(active_nebis, j))) &&  continue
-        comp, labels = _connected_components(bg, comp, labels, j)
+        comp, labels = _bit_connected_components(bg, comp, labels, j)
     end
     return comp, labels
 end
@@ -123,12 +123,12 @@ function is_clique(bg::MaskedBitGraph{INT}, S::INT) where{INT}
 end
 
 function full_components(bg::MaskedBitGraph{INT}, S::INT) where{INT}
-    comps = connected_components(bg, mask = ~S & bg.mask)
+    comps = bit_connected_components(bg, mask = ~S & bg.mask)
     return [comp for comp in comps if is_full_component(bg, S, comp)]
 end
 
 function res_components(bg::MaskedBitGraph{INT}, C::INT, Ω::INT) where{INT}
     mask = C & ~Ω
-    ccs = connected_components(bg, mask = mask)
+    ccs = bit_connected_components(bg, mask = mask)
     return ccs
 end

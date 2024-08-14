@@ -34,7 +34,7 @@ function is_cliquish(bg::MaskedBitGraph{INT}, S::INT, comps::Vector{INT}) where{
 end
 
 function is_pmc(bg::MaskedBitGraph{INT}, S::INT) where{INT}
-    comps = connected_components(bg, mask = (~S & bg.mask))
+    comps = bit_connected_components(bg, mask = (~S & bg.mask))
     if has_full_component(bg, S, comps)
         return false
     else
@@ -71,7 +71,7 @@ function extend_Π!(Π::Vector{INT}, Πi::Vector{INT}, vo::Vector{Int}, bg::Mask
         for i in 1:length(vo)
             removed_vertex = length(vo) == i ? zero(INT) : bmask(INT, vo[i + 1:end])
             cbg.mask = ~removed_vertex & bg.mask
-            comps = connected_components(cbg, mask = cbg.mask & ~Ω)
+            comps = bit_connected_components(cbg, mask = cbg.mask & ~Ω)
             has_full_component(cbg, Ω, comps) && (Ω |= bmask(INT, vo[i]))
         end
         push!(Π, Ω)
@@ -138,7 +138,7 @@ function one_more_vertex(G_1::MaskedBitGraph{INT}, G_0::MaskedBitGraph{INT}, Π_
     SΔ_0 = Set(Δ_0)
 
     for Ω_0 in Π_0
-        cs_Ω = connected_components(G_1, mask = ~Ω_0 & G_1.mask)
+        cs_Ω = bit_connected_components(G_1, mask = ~Ω_0 & G_1.mask)
         if has_full_component(G_1, Ω_0, cs_Ω)
             push!(Π_1, Ω_0 | bmask_a)
         else
@@ -151,7 +151,7 @@ function one_more_vertex(G_1::MaskedBitGraph{INT}, G_0::MaskedBitGraph{INT}, Π_
             push!(Π_1, S | bmask_a)
         end
         if (readbit(S, a) == 0) && (S ∉ SΔ_0)
-            fcs = connected_components(G_1, mask = ~S & G_1.mask)
+            fcs = bit_connected_components(G_1, mask = ~S & G_1.mask)
             for T in Δ_1
                 for C in fcs
                     t = S | (T & C)
@@ -168,13 +168,13 @@ end
 
 function all_pmc_bt(bg::MaskedBitGraph{INT}) where{INT}
     vo = vertex_order!(bg, Int[1]) # order to remove vertices from the graph, starting from 1, keep the graph connected
-    G0 = induced_subgraph(bg, bmask(INT, vo[1:1]))
+    G0 = bit_induced_subgraph(bg, bmask(INT, vo[1:1]))
 
     Π_G1 = [bmask(INT, vo[1])]
     Δ_G0 = Vector{INT}()
 
     for i in 2:N(bg)
-        G1 = induced_subgraph(bg, bmask(INT, vo[1:i]))
+        G1 = bit_induced_subgraph(bg, bmask(INT, vo[1:i]))
         Δ_G1 = all_min_sep(G1, false)
         Π_G1 = one_more_vertex(G1, G0, Π_G1, Δ_G1, Δ_G0)
         Δ_G0 = Δ_G1

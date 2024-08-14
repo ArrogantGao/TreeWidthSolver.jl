@@ -1,4 +1,4 @@
-using TreeWidthSolver: bit_neighbors, open_neighbors, closed_neighbors, is_clique
+using TreeWidthSolver: bit_neighbors, open_neighbors, closed_neighbors, is_clique, bit_induced_subgraph, bit_connected_components
 
 @testset "MaskedBitGraphs" begin
     g = random_regular_graph(10, 3)
@@ -9,7 +9,7 @@ using TreeWidthSolver: bit_neighbors, open_neighbors, closed_neighbors, is_cliqu
     bg = MaskedBitGraph(g)
     @test nv(bg) == 120
 
-    sg = induced_subgraph(bg, bmask(LongLongUInt{2}, 1:10))
+    sg = bit_induced_subgraph(bg, bmask(LongLongUInt{2}, 1:10))
     @test nv(sg) == 10
 end
 
@@ -19,7 +19,7 @@ end
     for i in 1:10
         @test bit_neighbors(bg, i) == bmask(LongLongUInt{1}, g.fadjlist[i])
     end
-    sub_bg = induced_subgraph(bg, bmask(LongLongUInt{1}, 1:5))
+    sub_bg = bit_induced_subgraph(bg, bmask(LongLongUInt{1}, 1:5))
     sub_g = induced_subgraph(g, 1:5)[1]
 
     for i in 1:5
@@ -39,12 +39,12 @@ end
     @test has_edge(bg, 1, 2)
     @test !has_edge(bg, 1, 4)
 
-    @test connected_components(bg) == [bmask(LongLongUInt{1}, 1:3), bmask(LongLongUInt{1}, 4:6)]
+    @test bit_connected_components(bg) == [bmask(LongLongUInt{1}, 1:3), bmask(LongLongUInt{1}, 4:6)]
 
     add_edge!(bg, 3, 4)
-    @test connected_components(bg) == [bmask(LongLongUInt{1}, 1:6)]
+    @test bit_connected_components(bg) == [bmask(LongLongUInt{1}, 1:6)]
 
-    @test connected_components(bg, mask = bmask(LongLongUInt{1}, [1, 2, 4, 5, 6])) == [bmask(LongLongUInt{1}, 1:2), bmask(LongLongUInt{1}, 4:6)]
+    @test bit_connected_components(bg, mask = bmask(LongLongUInt{1}, [1, 2, 4, 5, 6])) == [bmask(LongLongUInt{1}, 1:2), bmask(LongLongUInt{1}, 4:6)]
 end
 
 @testset "clique" begin
