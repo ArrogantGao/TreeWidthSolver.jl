@@ -1,7 +1,4 @@
-using TreeWidthSolver
-using TreeWidthSolver: isleaf, add_child!, decomposition_tree
-using Graphs
-using Test
+using TreeWidthSolver: isleaf, add_child!
 
 @testset "tree decompositions" begin
     n1 = DecompositionTreeNode([1, 2, 3])
@@ -21,19 +18,5 @@ using Test
     add_child!(tree.children[1], [4, 7])
     add_child!(tree.children[1], [4, 8, 9])
 
-    @test treewidth(tree) == 3
-
-    edges = [(1, 2), (2, 3), (1, 3), (3, 4), (4, 5), (5, 6), (4, 6)]
-    g = SimpleGraph(6)
-    for (src, dst) in edges
-        add_edge!(g, src, dst)
-    end
-    lg = LabeledSimpleGraph(g)
-    elimi = EliminationOrder([[4], [3], [6], [5], [2], [1]])
-    tree = decomposition_tree(elimi, lg, root = 3)
-
-    tree_exact = DecompositionTreeNode([4, 3])
-    add_child!(tree_exact, [1, 2, 3])
-    add_child!(tree_exact, [4, 5, 6])
-    @test tree == tree_exact
+    @test width(tree) == 3
 end

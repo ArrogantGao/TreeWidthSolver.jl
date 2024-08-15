@@ -1,62 +1,71 @@
 # generating all minimum separators of a given simple graph
 # following the method provided in Berry, Anne, Jean-Paul Bordat, and Olivier Cogis. “Generating All the Minimal Separators of a Graph.” In Graph-Theoretic Concepts in Computer Science, edited by Peter Widmayer, Gabriele Neyer, and Stephan Eidenbenz, 1665:167–72. Lecture Notes in Computer Science. Berlin, Heidelberg: Springer Berlin Heidelberg, 1999. https://doi.org/10.1007/3-540-46784-X_17.
 
-function is_min_sep(G::LabeledSimpleGraph{TG, TL, TW}, S::Set{TL}) where{TG, TL, TW}
+function is_min_sep(bg::MaskedBitGraph{INT}, S::INT; mask::INT = bg.mask) where{INT}
     flag = 0
-    for C in components(G, S)
-        if is_full_component(G, S, C)
+    comps = bit_connected_components(bg, mask = (mask & ~S))
+    for comp in comps
+        if is_full_component(bg, S, comp, mask = mask)
             flag += 1
         end
     end
     return flag ≥ 2
 end
 
-function all_min_sep_naive(G::LabeledSimpleGraph{TG, TL, TW}) where{TG, TL, TW}
-    Π = Set{Set{TL}}()
-    for sets in combinations(collect(keys(G.l2v)))
-        S = Set(sets)
-        if is_min_sep(G, S)
-            push!(Π, S)
-        end
+function all_min_sep_naive(bg::MaskedBitGraph{INT}) where{INT}
+    Δ = Vector{INT}()
+    for sets in combinations(1:N(bg))
+        S = bmask(INT, sets)
+        is_min_sep(bg, S) && push!(Δ, S)
     end
-    return Π
+    return Δ
 end
 
-function all_min_sep(G::LabeledSimpleGraph{TG, TL, TW}) where{TG, TL, TW}
+function all_min_sep(bg::MaskedBitGraph{INT}, verbose::Bool) where{INT}
+    verbose && @info "computing all minimal separators"
+
     # initialization
-    ΔT = Set{Set{TL}}()
-    for v in vertices(G)
-        close_neibs = closed_neighbors(G, [v])
-        for C in components(G, close_neibs)
-            ons = open_neighbors(G, C)
-            if !isempty(ons)
-                push!(ΔT, Set(ons))
+    ΔT = Vector{INT}()
+
+    for v in 1:N(bg)
+        (readbit(bg.mask, v) == 0) && continue
+        close_neibs = bit_neighbors(bg, v) | bmask(INT, v)
+        for comp in bit_connected_components(bg, mask = ~close_neibs)
+            ons = open_neighbors(bg, comp)
+            if (ons != 0) && (ons ∉ ΔT)
+                push!(ΔT, ons)
             end
         end
     end
 
-    # generation
-    ΔS = Vector{Set{TL}}()
-    for S in ΔT
-        push!(ΔS, S)
-    end
+    # it seems that SortedSet is not as good as Set
+    # ΔS = SortedSet(ΔT)
+    ΔS = Set(ΔT)
 
-    while !isempty(ΔS)
-        S = pop!(ΔS)
-        RS = Set{TL}[]
-        for x in S
-            for C in components(G, S ∪ neighbors(G, x))
-                push!(RS, Set(open_neighbors(G, C)))
+    i = 1
+    while i ≤ length(ΔT)
+
+        (verbose && (i%10000 == 0 || (i < 10000 && i%1000 ==0) || (i < 1000 && i%100==0) || (i<100 && i%10==0))) && @info "allminseps: $i, $(length(ΔT))"
+
+        S = ΔT[i]
+        RS = Vector{INT}()
+        for x in 1:N(bg)
+            iszero(readbit(S, x)) && continue
+            for comp in bit_connected_components(bg, mask = ~(S | bit_neighbors(bg, x)))
+                push!(RS, open_neighbors(bg, comp))
             end
         end
 
         for rs in RS
-            if rs ∉ ΔT
-                push!(ΔT, rs)
+            if rs ∉ ΔS
                 push!(ΔS, rs)
+                push!(ΔT, rs)
             end
         end
+        i += 1
     end
+
+    verbose && @info "all minimal separators computed, total: $(length(ΔT))"
 
     return ΔT
 end
