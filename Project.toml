@@ -1,7 +1,7 @@
 name = "TreeWidthSolver"
 uuid = "7d267fc5-9ace-409f-a54c-cd2374872a55"
 authors = ["Xuanzhao Gao, Jinguo Liu"]
-version = "0.3.0"
+version = "0.3.1"
 
 [deps]
 AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
@@ -15,8 +15,8 @@ AbstractTrees = "0.4"
 BitBasis = "0.9.6"
 Combinatorics = "1.0.2"
 Graphs = "1.11.2"
-SparseArrays = "1.10.0"
-julia = "1.10"
+SparseArrays = "1.8"
+julia = "1.8"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
