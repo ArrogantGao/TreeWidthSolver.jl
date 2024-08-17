@@ -18,7 +18,7 @@ end
 function MaskedBitGraph(g::SimpleGraph)
     N = nv(g)
     INT = LongLongUInt{N ÷ 64 + 1}
-    bitgraph = [bmask(INT, g.fadjlist[i]) for i in 1:N]
+    bitgraph = INT[bmask(INT, g.fadjlist[i]) for i in 1:N]
     mask = bmask(INT, 1:N)
     return MaskedBitGraph(bitgraph, deepcopy(g.fadjlist), mask)
 end
