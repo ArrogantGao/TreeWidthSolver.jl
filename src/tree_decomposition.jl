@@ -105,3 +105,18 @@ function is_treedecomposition(G::SimpleGraph{TG}, td::TreeDecomposition{TW, TL})
 
     return true
 end
+
+function tree_labeling(tree::DecompositionTreeNode{T}, labels::Vector{TL}) where{T, TL}
+    new_tree = DecompositionTreeNode(Set{TL}(), nothing, Vector{DecompositionTreeNode{TL}}())
+    _tree_labeling!(new_tree, tree, labels)
+    return new_tree
+end
+
+function _tree_labeling!(new_tree::DecompositionTreeNode{TL}, tree::DecompositionTreeNode{T}, labels::Vector{TL}) where{T, TL}
+    new_tree.bag = Set(labels[collect(tree.bag)])
+    for child in children(tree)
+        add_child!(new_tree, Set(labels[collect(child.bag)]))
+        _tree_labeling!(new_tree.children[end], child, labels)
+    end
+    return nothing
+end

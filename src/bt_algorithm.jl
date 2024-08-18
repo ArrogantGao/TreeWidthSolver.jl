@@ -13,7 +13,7 @@ function clique_width(S::INT, weights::Vector{TW}) where {INT, TW}
 end
 
 # weights are the log2 dims of the indices
-function bt_algorithm(bg::MaskedBitGraph{INT}, Π::Vector{INT}, weights::Vector{TW}, verbose::Bool) where{INT, TW}
+function bt_algorithm(bg::MaskedBitGraph{INT}, Π::Vector{INT}, weights::Vector{TW}, verbose::Bool, construct::Bool) where{INT, TW}
 
     verbose && @info "computing the exact treewidth using the Bouchitté-Todinca algorithm"
     verbose && @info "precomputation phase"
@@ -60,11 +60,15 @@ function bt_algorithm(bg::MaskedBitGraph{INT}, Π::Vector{INT}, weights::Vector{
         end
     end
 
-    # reconstrcution step
-    tree = construct_tree(bg, optChoice)
     tw = dp[(bmask(INT, 0), bg.mask)]
 
     verbose && @info "computing the exact treewidth done, treewidth: $tw"
+    !construct && return TreeDecomposition(tw, DecompositionTreeNode(Set{Int}()))
+
+    verbose && @info "reconstruction phase"
+    # reconstrcution step
+    tree = construct_tree(bg, optChoice)
+    verbose && @info "reconstruction phase done"
 
     return TreeDecomposition(tw, tree)
 end

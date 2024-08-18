@@ -23,12 +23,15 @@
         @test tw ≈ tws[i]
 
         Π = all_pmc_enmu(MaskedBitGraph(g), false)
-        td = bt_algorithm(MaskedBitGraph(g), Π, ones(ne(g)), false)
+        td = bt_algorithm(MaskedBitGraph(g), Π, ones(ne(g)), false, true)
 
         @test td.tw == tw
         @test width(td.tree) == tw
 
         order = elimination_order(g)
         @test Set(unique!(vcat(order...))) == Set(1:nv(g))
+
+        labeled_order = elimination_order(g, labels = ["v$i" for i in 1:nv(g)])
+        @test Set(unique!(vcat(labeled_order...))) == Set(["v$i" for i in 1:nv(g)])
     end
 end
