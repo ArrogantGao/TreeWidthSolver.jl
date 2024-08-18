@@ -8,7 +8,7 @@
 
 `TreeWidthSolver.jl` is a Julia package for solving the minimal treewidth and the corresponding tree decomposition of graphs. Currently we implemented the Bouchitte-Todinca algorithm[^Bouchitté][^Korhonen], which is a dynamic programming algorithm for solving the exact minimal treewidth problem of graphs. This package is used as a bacakend of [OMEinsumContractionOrders.jl](https://github.com/TensorBFS/OMEinsumContractionOrders.jl) for finding the optimal tensor network contraction order.
 
-For more details about this pacakage please see the [docs](https://ArrogantGao.github.io/TreeWidthSolver.jl/stable/), and please refer to this blog [https://arrogantgao.github.io/blogs/treewidth/](https://arrogantgao.github.io/blogs/treewidth/) for more about the algorithm we implemented.
+For more details about this pacakage please see the [docs](https://ArrogantGao.github.io/TreeWidthSolver.jl/stable/), and please refer to this [blog](https://arrogantgao.github.io/blogs/treewidth/) for more about the algorithm we implemented.
 
 <!-- References -->
 
