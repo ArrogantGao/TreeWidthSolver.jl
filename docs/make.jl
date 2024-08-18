@@ -12,9 +12,7 @@ makedocs(;
         edit_link="main",
         assets=String[],
     ),
-    pages=[
-        "Home" => "index.md",
-    ],
+    pages=["Home" => "index.md", "Manual" => "manual.md", "Contraction Order" => "contractionorder.md", "Performance" => "performance.md"],
 )
 
 deploydocs(;

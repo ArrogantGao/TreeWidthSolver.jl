@@ -1,3 +1,16 @@
+"""
+    graph_from_tuples(n::Int, edgs)
+
+Constructs a graph from a list of tuples representing edges.
+
+# Arguments
+- `n::Int`: The number of vertices in the graph.
+- `edgs`: A list of tuples representing the edges of the graph.
+
+# Returns
+A graph object.
+
+"""
 function graph_from_tuples(n::Int, edgs)
     g = SimpleGraph(n)
     for (i, j) in edgs
@@ -47,7 +60,18 @@ function save_graph(g::SimpleGraph, filename)
     end
     nothing
 end
-    
+
+"""
+    adjacency_mat(graph::SimpleGraph)
+
+Constructs the adjacency matrix of a given `SimpleGraph`.
+
+# Arguments
+- `graph::SimpleGraph`: The input graph.
+
+# Returns
+- `SparseMatrixCSC{Int}`: The adjacency matrix of the graph.
+"""
 function adjacency_mat(graph::SimpleGraph)
     rows = Int[]
     cols = Int[]

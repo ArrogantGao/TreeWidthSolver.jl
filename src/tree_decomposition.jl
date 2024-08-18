@@ -1,5 +1,16 @@
 using AbstractTrees
 
+"""
+    mutable struct DecompositionTreeNode{T}
+
+A mutable struct representing a node in a tree decomposition.
+
+# Fields
+- `bag::Set{T}`: The bag of the node, which is a set of elements of type `T`.
+- `parent::Union{DecompositionTreeNode{T}, Nothing}`: The parent node of the current node. It can be either a `DecompositionTreeNode{T}` or `Nothing` if the current node is the root.
+- `children::Vector{DecompositionTreeNode{T}}`: The children nodes of the current node, stored in a vector.
+
+"""
 mutable struct DecompositionTreeNode{T}
     bag::Set{T}
     parent::Union{DecompositionTreeNode{T}, Nothing}
@@ -67,6 +78,16 @@ end
 
 
 # TreeDecomposition is a structure to store a treewidth and tree decomposition of a graph
+"""
+    struct TreeDecomposition{TW, TL}
+
+A struct representing a tree decomposition.
+
+# Fields
+- `tw::TW`: The treewidth of the decomposition.
+- `tree::DecompositionTreeNode{TL}`: The root node of the decomposition tree.
+
+"""
 struct TreeDecomposition{TW, TL}
     tw::TW
     tree::DecompositionTreeNode{TL}
