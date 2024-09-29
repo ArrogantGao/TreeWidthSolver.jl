@@ -10,7 +10,8 @@ function bit2id(bit::INT, N::Int) where{INT}
     return id
 end
 
-function Base.hash(bits_tuple::NTuple{N, LongLongUInt{C}}) where{N, C}
+function Base.hash(bits_tuple::Tuple{LongLongUInt{C}, Vararg{LongLongUInt{C}, M}}) where{M, C}
+    N = M + 1
     hash0 = Base.hash(bits_tuple[1].content)
     for i in 2:N
         hash0 = Base.hash(bits_tuple[i].content, hash0)
