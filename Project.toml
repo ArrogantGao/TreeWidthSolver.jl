@@ -1,7 +1,7 @@
 name = "TreeWidthSolver"
 uuid = "7d267fc5-9ace-409f-a54c-cd2374872a55"
 authors = ["Xuanzhao Gao, Jinguo Liu"]
-version = "0.3.2"
+version = "0.3.3"
 
 [deps]
 AbstractTrees = "1520ce14-60c1-5f80-bbc7-55ef81b5835c"
