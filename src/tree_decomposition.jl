@@ -142,17 +142,17 @@ function _tree_labeling!(new_tree::DecompositionTreeNode{TL}, tree::Decompositio
     return nothing
 end
 
-function order2tree(eo::Vector{Vector{TE}}, g::SimpleGraph{TG}) where {TG, TE}
-    bags, tree = _tree_bags(vcat(eo...), g)
+function order2tree(eo::Vector{Int}, g::SimpleGraph{TG}) where {TG}
+    bags, tree = _tree_bags(eo, g)
     nb = length(bags)
-    d_tree = DecompositionTreeNode(Set(bags[nb]), nothing, Vector{DecompositionTreeNode{TE}}())
+    d_tree = DecompositionTreeNode(Set(bags[nb]), nothing, Vector{DecompositionTreeNode{Int}}())
     return construct_tree!(d_tree, bags, [nb], tree, nb)
 end
 
-function _tree_bags(order::Vector{TE}, g::SimpleGraph{TG}) where{TG, TE}
+function _tree_bags(order::Vector{Int}, g::SimpleGraph{TG}) where{TG}
 
     G = deepcopy(g)
-    B = Vector{Vector{TE}}() # bags
+    B = Vector{Vector{Int}}() # bags
     T = SimpleGraph() # tree
     orphan_bags = Int[] # Array to hold parentless vertices of T
 

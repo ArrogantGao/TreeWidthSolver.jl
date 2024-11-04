@@ -24,7 +24,9 @@ end
 @testset "order2tree" begin
     g = smallgraph(:petersen)
     eo = elimination_order(g)
-    td = order2tree(eo, g)
+    td = decomposition_tree(g, eo)
+    td_2 = decomposition_tree(g, vcat(eo...))
     tree = decomposition_tree(g).tree
     @test td == tree
+    @test td == td_2
 end

@@ -1,6 +1,9 @@
 using TreeWidthSolver
 using Graphs, BitBasis
 using Test
+using Random
+
+Random.seed!(1234)
 
 @testset "TreeWidthSolver.jl" begin
     include("bitbasis.jl")
