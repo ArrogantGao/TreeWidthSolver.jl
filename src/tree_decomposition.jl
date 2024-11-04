@@ -141,3 +141,74 @@ function _tree_labeling!(new_tree::DecompositionTreeNode{TL}, tree::Decompositio
     end
     return nothing
 end
+
+function order2tree(eo::Vector{Vector{TE}}, g::SimpleGraph{TG}) where {TG, TE}
+    bags, tree = _tree_bags(vcat(eo...), g)
+    nb = length(bags)
+    d_tree = DecompositionTreeNode(Set(bags[nb]), nothing, Vector{DecompositionTreeNode{TE}}())
+    return construct_tree!(d_tree, bags, [nb], tree, nb)
+end
+
+function _tree_bags(order::Vector{TE}, g::SimpleGraph{TG}) where{TG, TE}
+
+    G = deepcopy(g)
+    B = Vector{Vector{TE}}() # bags
+    T = SimpleGraph() # tree
+    orphan_bags = Int[] # Array to hold parentless vertices of T
+
+    for u in reverse(order)
+        # Eliminate u from G: form a clique and remove u,
+        # Take the clique formed by eliminating u as the next possible bag
+        Nᵤ = neighbors(G, u)
+        b = [u]
+        ib = length(B) + 1
+        if !isempty(Nᵤ) b = [Nᵤ; u] end
+        G = eliminate!(G, u)
+
+        drop_bag = false
+        # keep only maximal cliques
+        for i in orphan_bags
+            l = B[i]
+            if Set(b) == Set(intersect(b, l))
+                b = l
+                ib = i
+                drop_bag = true
+                break
+            end
+        end
+
+        # add a new vetex to the tree for the next bag
+        # and append it to the parentless vertices.
+        if !drop_bag
+            push!(B, b)
+            add_vertex!(T)
+            push!(orphan_bags, ib)
+        end
+
+        # Check if the new bag is a parent of any of the
+        # orphan vertices and update the list of orphans.
+        for i in orphan_bags
+            l = B[i]
+            b∩l = intersect(b, l)
+            if u in b∩l && !issubset(b, b∩l)
+                orphan_bags = setdiff(orphan_bags, [i])
+                add_edge!(T, i, ib)
+            end
+        end
+    end
+    
+    return B, T
+end
+
+function construct_tree!(d_tree::DecompositionTreeNode{TE}, bags::Vector{Vector{TE}}, used_bags::Vector{Int}, tree::SimpleGraph{TE}, u::Int) where{TE}
+    neibs = neighbors(tree, u)
+    childs = setdiff(neibs, used_bags)
+    used_bags = neibs ∪ used_bags
+
+    for i in childs
+        add_child!(d_tree, Set(bags[i]))
+        construct_tree!(d_tree.children[end], bags, used_bags, tree, i)
+    end
+
+    return d_tree
+end

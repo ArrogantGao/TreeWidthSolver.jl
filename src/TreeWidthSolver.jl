@@ -14,7 +14,7 @@ export is_pmc, all_pmc_naive, all_pmc_enmu, all_pmc_bt
 export bt_algorithm
 
 # highest level interface
-export exact_treewidth, decomposition_tree, elimination_order
+export exact_treewidth, decomposition_tree, elimination_order, order2tree
 
 export DecompositionTreeNode, TreeDecomposition, EliminationOrder, width
 

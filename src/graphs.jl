@@ -143,3 +143,19 @@ function simple_graph(adjacency_mat::SparseMatrixCSC)
 
     return g
 end
+
+function eliminate!(g::SimpleGraph{TG}, v::TG) where{TG}
+    neibs = copy(neighbors(g, v))
+
+    for i in 1:length(neibs)
+        rem_edge!(g, neibs[i], v)
+    end
+
+    for i in 1:length(neibs) - 1
+        for j in i + 1:length(neibs)
+            add_edge!(g, neibs[i], neibs[j])
+        end
+    end
+
+    return g
+end

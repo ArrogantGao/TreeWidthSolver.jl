@@ -20,3 +20,11 @@ using TreeWidthSolver: isleaf, add_child!
 
     @test width(tree) == 3
 end
+
+@testset "order2tree" begin
+    g = smallgraph(:petersen)
+    eo = elimination_order(g)
+    td = order2tree(eo, g)
+    tree = decomposition_tree(g).tree
+    @test td == tree
+end
