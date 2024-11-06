@@ -98,7 +98,11 @@ function Base.show(io::IO, td::TreeDecomposition)
 end
 
 function is_treedecomposition(G::SimpleGraph{TG}, td::TreeDecomposition{TW, TL}) where{TG, TW, TL}
-    treebags = [node.bag for node in collect(PreOrderDFS(td.tree))]
+    return is_treedecomposition(G, td.tree)
+end
+
+function is_treedecomposition(G::SimpleGraph{TG}, tree::DecompositionTreeNode{TL}) where{TG, TL}
+    treebags = [node.bag for node in collect(PreOrderDFS(tree))]
 
     # all vertices in G are in some bag
     if Set(foldr(∪, collect.(treebags))) != Set(vertices(G))
@@ -106,7 +110,8 @@ function is_treedecomposition(G::SimpleGraph{TG}, td::TreeDecomposition{TW, TL})
     end
 
     # all edges in G are in some bag
-    for (i, j) in edges(G)
+    for edge in edges(G)
+        i, j = src(edge), dst(edge)
         flag = false
         for Ω in treebags
             if (i in Ω && j in Ω)
@@ -119,7 +124,7 @@ function is_treedecomposition(G::SimpleGraph{TG}, td::TreeDecomposition{TW, TL})
     end
 
     # all treebags containing the same vertex form a connected subtree
-    eo = vcat(EliminationOrder(td.tree).order...)
+    eo = vcat(EliminationOrder(tree).order...)
     if (length(eo) != nv(G)) || (unique(eo) != eo)
         return false
     end

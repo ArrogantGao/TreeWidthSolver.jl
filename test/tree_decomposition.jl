@@ -29,4 +29,7 @@ end
     tree = decomposition_tree(g).tree
     @test td == tree
     @test td == td_2
+
+    @test is_treedecomposition(g, td)
+    @test is_treedecomposition(g, td_2)
 end
