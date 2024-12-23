@@ -98,7 +98,11 @@ function Base.show(io::IO, td::TreeDecomposition)
 end
 
 function is_treedecomposition(G::SimpleGraph{TG}, td::TreeDecomposition{TW, TL}) where{TG, TW, TL}
-    treebags = [node.bag for node in collect(PreOrderDFS(td.tree))]
+    return is_treedecomposition(G, td.tree)
+end
+
+function is_treedecomposition(G::SimpleGraph{TG}, tree::DecompositionTreeNode{TL}) where{TG, TL}
+    treebags = [node.bag for node in collect(PreOrderDFS(tree))]
 
     # all vertices in G are in some bag
     if Set(foldr(∪, collect.(treebags))) != Set(vertices(G))
@@ -106,7 +110,8 @@ function is_treedecomposition(G::SimpleGraph{TG}, td::TreeDecomposition{TW, TL})
     end
 
     # all edges in G are in some bag
-    for (i, j) in edges(G)
+    for edge in edges(G)
+        i, j = src(edge), dst(edge)
         flag = false
         for Ω in treebags
             if (i in Ω && j in Ω)
@@ -119,7 +124,7 @@ function is_treedecomposition(G::SimpleGraph{TG}, td::TreeDecomposition{TW, TL})
     end
 
     # all treebags containing the same vertex form a connected subtree
-    eo = vcat(EliminationOrder(td.tree).order...)
+    eo = vcat(EliminationOrder(tree).order...)
     if (length(eo) != nv(G)) || (unique(eo) != eo)
         return false
     end
@@ -140,4 +145,75 @@ function _tree_labeling!(new_tree::DecompositionTreeNode{TL}, tree::Decompositio
         _tree_labeling!(new_tree.children[end], child, labels)
     end
     return nothing
+end
+
+function order2tree(eo::Vector{Int}, g::SimpleGraph{TG}) where {TG}
+    bags, tree = _tree_bags(eo, g)
+    nb = length(bags)
+    d_tree = DecompositionTreeNode(Set(bags[nb]), nothing, Vector{DecompositionTreeNode{Int}}())
+    return construct_tree!(d_tree, bags, [nb], tree, nb)
+end
+
+function _tree_bags(order::Vector{Int}, g::SimpleGraph{TG}) where{TG}
+
+    G = deepcopy(g)
+    B = Vector{Vector{Int}}() # bags
+    T = SimpleGraph() # tree
+    orphan_bags = Int[] # Array to hold parentless vertices of T
+
+    for u in reverse(order)
+        # Eliminate u from G: form a clique and remove u,
+        # Take the clique formed by eliminating u as the next possible bag
+        Nᵤ = neighbors(G, u)
+        b = [u]
+        ib = length(B) + 1
+        if !isempty(Nᵤ) b = [Nᵤ; u] end
+        G = eliminate!(G, u)
+
+        drop_bag = false
+        # keep only maximal cliques
+        for i in orphan_bags
+            l = B[i]
+            if Set(b) == Set(intersect(b, l))
+                b = l
+                ib = i
+                drop_bag = true
+                break
+            end
+        end
+
+        # add a new vetex to the tree for the next bag
+        # and append it to the parentless vertices.
+        if !drop_bag
+            push!(B, b)
+            add_vertex!(T)
+            push!(orphan_bags, ib)
+        end
+
+        # Check if the new bag is a parent of any of the
+        # orphan vertices and update the list of orphans.
+        for i in orphan_bags
+            l = B[i]
+            b∩l = intersect(b, l)
+            if u in b∩l && !issubset(b, b∩l)
+                orphan_bags = setdiff(orphan_bags, [i])
+                add_edge!(T, i, ib)
+            end
+        end
+    end
+    
+    return B, T
+end
+
+function construct_tree!(d_tree::DecompositionTreeNode{TE}, bags::Vector{Vector{TE}}, used_bags::Vector{Int}, tree::SimpleGraph{TE}, u::Int) where{TE}
+    neibs = neighbors(tree, u)
+    childs = setdiff(neibs, used_bags)
+    used_bags = neibs ∪ used_bags
+
+    for i in childs
+        add_child!(d_tree, Set(bags[i]))
+        construct_tree!(d_tree.children[end], bags, used_bags, tree, i)
+    end
+
+    return d_tree
 end

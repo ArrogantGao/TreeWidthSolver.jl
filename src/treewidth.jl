@@ -1,5 +1,5 @@
 """
-    exact_treewidth(g::SimpleGraph{TG}; weights::Vector{TW} = ones(nv(g)), verbose::Bool = false) where {TG, TW}
+	exact_treewidth(g::SimpleGraph{TG}; weights::Vector{TW} = ones(nv(g)), verbose::Bool = false) where {TG, TW}
 
 Compute the exact treewidth of a given graph `g` using the BT algorithm.
 
@@ -13,14 +13,14 @@ Compute the exact treewidth of a given graph `g` using the BT algorithm.
 
 """
 function exact_treewidth(g::SimpleGraph{TG}; weights::Vector{TW} = ones(nv(g)), verbose::Bool = false) where {TG, TW}
-    bg = MaskedBitGraph(g)
-    Π = all_pmc_enmu(bg, verbose)
-    td = bt_algorithm(bg, Π, weights, verbose, false)
-    return td.tw
+	bg = MaskedBitGraph(g)
+	Π = all_pmc_enmu(bg, verbose)
+	td = bt_algorithm(bg, Π, weights, verbose, false)
+	return td.tw
 end
 
 """
-    decomposition_tree(g::SimpleGraph{TG}; labels::Vector{TL} = collect(1:nv(g)), weights::Vector{TW} = ones(nv(g)), verbose::Bool = false) where {TG, TW, TL}
+	decomposition_tree(g::SimpleGraph{TG}; labels::Vector{TL} = collect(1:nv(g)), weights::Vector{TW} = ones(nv(g)), verbose::Bool = false) where {TG, TW, TL}
 
 Constructs a decomposition tree for a given simple graph `g`.
 
@@ -35,15 +35,47 @@ Constructs a decomposition tree for a given simple graph `g`.
 
 """
 function decomposition_tree(g::SimpleGraph{TG}; labels::Vector{TL} = collect(1:nv(g)), weights::Vector{TW} = ones(nv(g)), verbose::Bool = false) where {TG, TW, TL}
-    bg = MaskedBitGraph(g)
-    Π = all_pmc_enmu(bg, verbose)
-    td = bt_algorithm(bg, Π, weights, verbose, true)
-    labeled_tree = tree_labeling(td.tree, labels)
-    return TreeDecomposition(td.tw, labeled_tree)
+	bg = MaskedBitGraph(g)
+	Π = all_pmc_enmu(bg, verbose)
+	td = bt_algorithm(bg, Π, weights, verbose, true)
+	labeled_tree = tree_labeling(td.tree, labels)
+	return TreeDecomposition(td.tw, labeled_tree)
 end
 
 """
-    elimination_order(g::SimpleGraph{TG}; labels::Vector{TL} = collect(1:nv(g)), weights::Vector{TW} = ones(nv(g)), verbose::Bool = false) where {TG, TL, TW}
+    decomposition_tree(g::SimpleGraph{TG}, orders::Union{Vector{Vector{TE}}, Vector{TE}}; labels::Vector{TL} = [1:length(vertices(g))...]) where {TG, TE, TL}
+
+Constructs a decomposition tree for a given simple graph `g` based on the provided orders.
+
+# Arguments
+- `g::SimpleGraph{TG}`: The input graph.
+- `orders::Union{Vector{Vector{TE}}, Vector{TE}}`: The orders for constructing the decomposition tree. Can be a vector of vectors or a single vector.
+- `labels::Vector{TL}`: (optional) The labels for the vertices of the graph. Default is `collect(1:nv(g))`.
+
+# Returns
+- `TreeDecomposition`: The resulting decomposition tree, where the tree is labeled according to the provided labels.
+
+# Raises
+- `AssertionError`: If the length of `new_orders` does not match the number of vertices in `g`, if `new_orders` contains duplicates, or if the length of `labels` does not match the length of `new_orders`.
+
+"""
+function decomposition_tree(g::SimpleGraph{TG}, orders::Union{Vector{Vector{TE}}, Vector{TE}}; labels::Vector{TL} = [1:length(vertices(g))...]) where {TG, TE, TL}
+
+	new_orders = (orders isa Vector{Vector{TE}}) ? vcat(orders...) : orders
+	@assert length(new_orders) == nv(g)
+	@assert unique(new_orders) == new_orders
+	@assert length(labels) == length(new_orders)
+
+	labels_dict = Dict(labels[i] => i for i in 1:length(labels))
+	int_orders = [labels_dict[i] for i in new_orders]
+
+	tree = order2tree(int_orders, g)
+
+	return tree_labeling(tree, labels)
+end
+
+"""
+	elimination_order(g::SimpleGraph{TG}; labels::Vector{TL} = collect(1:nv(g)), weights::Vector{TW} = ones(nv(g)), verbose::Bool = false) where {TG, TL, TW}
 
 Compute the elimination order of a graph `g` using the BT algorithm.
 
@@ -58,7 +90,7 @@ Compute the elimination order of a graph `g` using the BT algorithm.
 
 """
 function elimination_order(g::SimpleGraph{TG}; labels::Vector{TL} = collect(1:nv(g)), weights::Vector{TW} = ones(nv(g)), verbose::Bool = false) where {TG, TL, TW}
-    td = decomposition_tree(g, labels=labels, weights=weights, verbose=verbose)
-    eo = EliminationOrder(td.tree)
-    return eo.order
+	td = decomposition_tree(g, labels = labels, weights = weights, verbose = verbose)
+	eo = EliminationOrder(td.tree)
+	return eo.order
 end

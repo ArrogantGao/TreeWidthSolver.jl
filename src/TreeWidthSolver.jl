@@ -15,6 +15,7 @@ export bt_algorithm
 
 # highest level interface
 export exact_treewidth, decomposition_tree, elimination_order
+export is_treedecomposition
 
 export DecompositionTreeNode, TreeDecomposition, EliminationOrder, width
 
