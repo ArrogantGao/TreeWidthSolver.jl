@@ -12,7 +12,7 @@ SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [compat]
 AbstractTrees = "0.4"
-BitBasis = "0.9.6"
+BitBasis = "0.9.10"
 Combinatorics = "1.0.2"
 Graphs = "1.11.2"
 SparseArrays = "1.8"
